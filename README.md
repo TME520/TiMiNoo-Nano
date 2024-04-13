@@ -6,7 +6,7 @@
 
 2 mini games, 7 food types, friends visits and presents, one button action, no sound, no death.
 
-Runs on Arduino Nano. Available for Arduboy and Arduino.
+Runs on Arduino Nano. Available for Arduboy and Arduino Leonardo/Uno.
 
 > **Game type**: Virtual Pet
 >
