@@ -2,16 +2,13 @@
 
 // U8GLIB_SH1106_128X64 u8g(13, 11, 10, 9); // SCK = 13, MOSI = 11, CS = 10, A0 = 9
 U8GLIB_SSD1306_128X64 u8g(U8G_I2C_OPT_NONE | U8G_I2C_OPT_DEV_0);
+
 /*
 = OLED screen =
-
 GND  = GND (5V)
 VCC  = 5V
-CLK  = 13
-MOSI = 11
-RES  = RES
-DC   = 9
-CS   = 10
+SCL  = A5
+SDA  = A4
 
 = Button =
 
@@ -61,26 +58,29 @@ long randomGameIconXPos = 0;
 long randomFoodType = 0;
 int gameIconXPos = 0;
 int versionCounter = 0;
+int shortWait = 100;
+int mediumWait = 300;
+int longWait = 600;
 
 // Cat status variables
 // Status metrics
 // 0 = depleted, 1 = low, 2 = average, 3 = full
-long catHunger = random(1, 4);
-long catHygiene = random(1, 4);
+long catHunger = 0;
+long catHygiene = 1;
 long catMorale = random(1, 4);
-long catEducation = random(1, 3);
+long catEducation = 0;
 long catEntertainment = random(1, 4);
 
 // Status change timing (decrement status variable every x frames)
 // Production timings
-unsigned long catHungerStep = random(5000, 8000);
+unsigned long catHungerStep = random(4000, 7000);
 // unsigned long catHungerStep = 1;
-unsigned long catHygieneStep = random(10000, 20000);
+unsigned long catHygieneStep = random(9000, 19000);
 // unsigned long catHygieneStep = 1;
-unsigned long catMoraleStep = random(4000, 5000);
-unsigned long catEducationStep = random(500, 1600);
+unsigned long catMoraleStep = random(3000, 4000);
+unsigned long catEducationStep = random(400, 1500);
 // unsigned long catEducationStep = 3;
-unsigned long catEntertainmentStep = random(400, 800);
+unsigned long catEntertainmentStep = random(300, 700);
 
 // Tracking status checks
 unsigned long lastCatHungerCheck = 0;
@@ -259,23 +259,23 @@ static unsigned char bar_28x28_bits[] U8G_PROGMEM = {
 #define casino_frame_40x40_width 40
 #define casino_frame_40x40_height 40
 static unsigned char casino_frame_40x40_bits[] U8G_PROGMEM = {
-   0xf8, 0xff, 0xff, 0xff, 0x1f, 0xf8, 0xff, 0xff, 0xff, 0x1f, 0xf8, 0xff,
-   0xff, 0xff, 0x1f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-   0xff, 0x1f, 0x00, 0x00, 0x00, 0xf8, 0x1f, 0x00, 0x00, 0x00, 0xf8, 0x1f,
-   0x00, 0x00, 0x00, 0xf8, 0x1f, 0x00, 0x00, 0x00, 0xf8, 0x1f, 0x00, 0x00,
-   0x00, 0xf8, 0x1f, 0x00, 0x00, 0x00, 0xf8, 0x1f, 0x00, 0x00, 0x00, 0xf8,
-   0x1f, 0x00, 0x00, 0x00, 0xf8, 0x1f, 0x00, 0x00, 0x00, 0xf8, 0x1f, 0x00,
-   0x00, 0x00, 0xf8, 0x1f, 0x00, 0x00, 0x00, 0xf8, 0x1f, 0x00, 0x00, 0x00,
-   0xf8, 0x1f, 0x00, 0x00, 0x00, 0xf8, 0x1f, 0x00, 0x00, 0x00, 0xf8, 0x1f,
-   0x00, 0x00, 0x00, 0xf8, 0x1f, 0x00, 0x00, 0x00, 0xf8, 0x1f, 0x00, 0x00,
-   0x00, 0xf8, 0x1f, 0x00, 0x00, 0x00, 0xf8, 0x1f, 0x00, 0x00, 0x00, 0xf8,
-   0x1f, 0x00, 0x00, 0x00, 0xf8, 0x1f, 0x00, 0x00, 0x00, 0xf8, 0x1f, 0x00,
-   0x00, 0x00, 0xf8, 0x1f, 0x00, 0x00, 0x00, 0xf8, 0x1f, 0x00, 0x00, 0x00,
-   0xf8, 0x1f, 0x00, 0x00, 0x00, 0xf8, 0x1f, 0x00, 0x00, 0x00, 0xf8, 0x1f,
-   0x00, 0x00, 0x00, 0xf8, 0x1f, 0x00, 0x00, 0x00, 0xf8, 0x1f, 0x00, 0x00,
-   0x00, 0xf8, 0x1f, 0x00, 0x00, 0x00, 0xf8, 0xff, 0xff, 0xff, 0xff, 0xff,
-   0xff, 0xff, 0xff, 0xff, 0xff, 0xf8, 0xff, 0xff, 0xff, 0x1f, 0xf8, 0xff,
-   0xff, 0xff, 0x1f, 0xf8, 0xff, 0xff, 0xff, 0x1f };
+   0x7e, 0xfe, 0xff, 0x7f, 0x7e, 0x71, 0xfe, 0xff, 0x7f, 0x8e, 0x71, 0xfe,
+   0xff, 0x7f, 0x8e, 0x71, 0xfe, 0xff, 0x7f, 0x8e, 0x0f, 0x00, 0x00, 0x00,
+   0xf0, 0x0f, 0x00, 0x00, 0x00, 0xf0, 0x0f, 0x00, 0x00, 0x00, 0xf0, 0x00,
+   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0f, 0x00, 0x00,
+   0x00, 0xf0, 0x0f, 0x00, 0x00, 0x00, 0xf0, 0x0f, 0x00, 0x00, 0x00, 0xf0,
+   0x0f, 0x00, 0x00, 0x00, 0xf0, 0x0f, 0x00, 0x00, 0x00, 0xf0, 0x0f, 0x00,
+   0x00, 0x00, 0xf0, 0x0f, 0x00, 0x00, 0x00, 0xf0, 0x0f, 0x00, 0x00, 0x00,
+   0xf0, 0x0f, 0x00, 0x00, 0x00, 0xf0, 0x0f, 0x00, 0x00, 0x00, 0xf0, 0x0f,
+   0x00, 0x00, 0x00, 0xf0, 0x0f, 0x00, 0x00, 0x00, 0xf0, 0x0f, 0x00, 0x00,
+   0x00, 0xf0, 0x0f, 0x00, 0x00, 0x00, 0xf0, 0x0f, 0x00, 0x00, 0x00, 0xf0,
+   0x0f, 0x00, 0x00, 0x00, 0xf0, 0x0f, 0x00, 0x00, 0x00, 0xf0, 0x0f, 0x00,
+   0x00, 0x00, 0xf0, 0x0f, 0x00, 0x00, 0x00, 0xf0, 0x0f, 0x00, 0x00, 0x00,
+   0xf0, 0x0f, 0x00, 0x00, 0x00, 0xf0, 0x0f, 0x00, 0x00, 0x00, 0xf0, 0x00,
+   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0f, 0x00, 0x00,
+   0x00, 0xf0, 0x0f, 0x00, 0x00, 0x00, 0xf0, 0x0f, 0x00, 0x00, 0x00, 0xf0,
+   0x71, 0xfe, 0xff, 0x7f, 0x8e, 0x71, 0xfe, 0xff, 0x7f, 0x8e, 0x71, 0xfe,
+   0xff, 0x7f, 0x8e, 0x7e, 0xfe, 0xff, 0x7f, 0x7e };
 
 #define speech_bubble_56x48_width 56
 #define speech_bubble_56x48_height 48
@@ -692,6 +692,8 @@ void checkButton()
 void setup(void) {
   // initialize the pushbutton pin as an input:
   pinMode(buttonPin, INPUT);
+  // Wait a bit
+  delay(10);
   // flip screen, if required
   u8g.setRot180();
 }
@@ -924,7 +926,7 @@ void loop(void) {
                 break;
             }
             feedCounter += 1;
-            if (feedCounter>300) {
+            if (feedCounter>shortWait) {
               feedCounter = 0;
               if (selectedFood != 6) {
                 feedSequence = 2;
@@ -957,7 +959,7 @@ void loop(void) {
               u8g.drawStr(0, 59, "      Yum!      ");
             }
             feedCounter += 1;
-            if (feedCounter>250) {
+            if (feedCounter>shortWait) {
               feedCounter = 0;
               if (selectedFood < 6) {
                 superHappyCounter = 100;
@@ -1004,7 +1006,7 @@ void loop(void) {
               kokoXPos = 97;
             }
             snailCounter += 1;
-            if (snailCounter>100) {
+            if (snailCounter>shortWait) {
               snailCounter = 0;
               lessonSequence = 1;
             }
@@ -1016,7 +1018,7 @@ void loop(void) {
             u8g.drawXBMP(97, 40, koko_le_snail_26x22_width, koko_le_snail_26x22_height, koko_le_snail_26x22_bits);
             u8g.drawStr(0, 58, "       Hi! >    ");
             snailCounter += 1;
-            if (snailCounter>200) {
+            if (snailCounter>shortWait) {
               snailCounter = 0;
               lessonSequence = 2;
             }
@@ -1032,7 +1034,7 @@ void loop(void) {
             u8g.drawStr(16, 30, "");
             u8g.drawStr(16, 36, "~ Koko Le Snail ~");
             snailCounter += 1;
-            if (snailCounter>300) {
+            if (snailCounter>shortWait) {
               snailCounter = 0;
               lessonSequence = 3;
             }
@@ -1082,7 +1084,7 @@ void loop(void) {
                 break;
             }
             snailCounter += 1;
-            if (snailCounter>300) {
+            if (snailCounter>mediumWait) {
               snailCounter = 0;
               lessonSequence = 4;
             }
@@ -1093,7 +1095,7 @@ void loop(void) {
             u8g.drawXBMP(51, 12, study_26x28_width, study_26x28_height, study_26x28_bits);
             u8g.drawStr(0, 58, "  + 1 Education ");
             snailCounter += 1;
-            if (snailCounter>300) {
+            if (snailCounter>shortWait) {
               snailCounter = 0;
               superHappyCounter = 100;
               score += 100;
@@ -1113,7 +1115,7 @@ void loop(void) {
             cleanCounter -= 1;
             if (cleanCounter<0) {
               cleanCounter = 0;
-            } else if (cleanCounter>100) {
+            } else if (cleanCounter>shortWait) {
               cleanCounter = 0;
               cleanSequence = 1;
             }
@@ -1168,7 +1170,7 @@ void loop(void) {
             u8g.setFont(u8g_font_unifont);
             u8g.drawStr(0, 16, "      All clean ");
             cleanCounter += 1;
-            if (cleanCounter>300) {
+            if (cleanCounter>shortWait) {
               cleanCounter = 0;
               superHappyCounter = 100;
               score += 200;
@@ -1230,7 +1232,7 @@ void loop(void) {
               break;
           }
           gameCounter += 1;
-          if (gameCounter>600) {
+          if (gameCounter>longWait) {
             gameCounter = 0;
             gameMode = 0;
           }
@@ -1275,7 +1277,7 @@ void loop(void) {
               break;
           }
           gameCounter += 1;
-          if (gameCounter>300) {
+          if (gameCounter>shortWait) {
             gameCounter = 0;
             if (gamePick > 0) {
               superHappyCounter = 100;
@@ -1295,7 +1297,7 @@ void loop(void) {
             u8g.drawXBMP(50, 14, door_28x30_width, door_28x30_height, door_28x30_bits);
             u8g.drawStr(40, 59, "Knock knock!");
             randomVisitCounter += 1;
-            if (randomVisitCounter>4000) {
+            if (randomVisitCounter>longWait) {
               randomVisitSequence = 1;
               randomVisitCounter = 0;
             }
@@ -1306,7 +1308,7 @@ void loop(void) {
             u8g.drawXBMP(96, 14, cindy_28x26_width, cindy_28x26_height, cindy_28x26_bits);
             u8g.drawStr(45, 59, "Hi friend!");
             randomVisitCounter += 1;
-            if (randomVisitCounter>200) {
+            if (randomVisitCounter>shortWait) {
               randomVisitSequence = 2;
               randomVisitCounter = 0;
             }
@@ -1322,7 +1324,7 @@ void loop(void) {
               u8g.drawStr(45, 59, "I got coco cake!");
             }
             randomVisitCounter += 1;
-            if (randomVisitCounter>200) {
+            if (randomVisitCounter>shortWait) {
               randomVisitSequence = 3;
               randomVisitCounter = 0;
             }
@@ -1339,7 +1341,7 @@ void loop(void) {
             u8g.drawXBMP(96, 14, cindy_28x26_width, cindy_28x26_height, cindy_28x26_bits);
             u8g.drawStr(45, 59, "Have some <3");
             randomVisitCounter += 1;
-            if (randomVisitCounter>200) {
+            if (randomVisitCounter>shortWait) {
               randomVisitSequence = 4;
               randomVisitCounter = 0;
             }
@@ -1355,7 +1357,7 @@ void loop(void) {
             }
             u8g.drawStr(0, 59, "      Yum!      ");
             randomVisitCounter += 1;
-            if (randomVisitCounter>200) {
+            if (randomVisitCounter>shortWait) {
               randomVisitSequence = 0;
               randomVisitCounter = 0;
               superHappyCounter = 100;
@@ -1369,9 +1371,9 @@ void loop(void) {
       case 99:
         // Show version
         u8g.setFont(u8g_font_unifont);
-        u8g.drawStr(0, 50, " TiMiNoo v1.2.9 ");
+        u8g.drawStr(0, 50, " TiMiNoo v1.3.0 ");
         versionCounter += 1;
-        if (versionCounter>400) {
+        if (versionCounter>mediumWait) {
           gameMode = 0;
         }
         break;
@@ -1382,6 +1384,6 @@ void loop(void) {
       ltoa(score, scoreString, 10);
       u8g.drawStr(81, 60, scoreString);
     }
-    delay(10);
+    delay(6);
   } while( u8g.nextPage() );
 }
