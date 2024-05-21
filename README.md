@@ -1,10 +1,10 @@
 ![TiMiNoo logo](./assets/logo/2.png "TiMiNoo logo")
 
-![Catsino Deluxe](./assets/manual/ardens/playing.png =128x64)
-![Catwash](./assets/manual/ardens/washing.png)
-![School](./assets/manual/ardens/educating2.png)
-![Feed](./assets/manual/ardens/feeding3.png)
-![Cuddle](./assets/manual/ardens/need_cuddle.png)
+![Catsino Deluxe](./assets/illustrations/playing-192x108.jpg)
+![Catwash](./assets/illustrations/washing-192x108.jpg)
+![School](./assets/illustrations/educating-192x108.jpg)
+![Feed](./assets/illustrations/feeding-192x108.jpg)
+![Cuddle](./assets/illustrations/need_cuddle-192x108.jpg)
 
 # Presentation
 
