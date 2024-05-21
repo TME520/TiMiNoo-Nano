@@ -5,6 +5,9 @@
 ![School](./assets/illustrations/educating-192x108.jpg)
 ![Feed](./assets/illustrations/feeding-192x108.jpg)
 ![Cuddle](./assets/illustrations/need_cuddle-192x108.jpg)
+![After washing](./assets/illustrations/washing2-192x108.jpg)
+![After playing](./assets/illustrations/playing2-192x108.jpg)
+![After cuddling](./assets/illustrations/cuddling-192x108.jpg)
 
 # Presentation
 
