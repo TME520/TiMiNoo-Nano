@@ -1,6 +1,6 @@
 ![TiMiNoo logo](./assets/logo/2.png "TiMiNoo logo")
 
-![Catsino Deluxe](./assets/manual/ardens/playing.png)
+![Catsino Deluxe](./assets/manual/ardens/playing.png =128x64)
 ![Catwash](./assets/manual/ardens/washing.png)
 ![School](./assets/manual/ardens/educating2.png)
 ![Feed](./assets/manual/ardens/feeding3.png)
