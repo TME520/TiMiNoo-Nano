@@ -2,7 +2,7 @@
 #include <avr/pgmspace.h>
 
 // U8GLIB_SH1106_128X64 u8g(13, 11, 10, 9); // SCK = 13, MOSI = 11, CS = 10, A0 = 9
-U8G2_SSD1306_128X64_NONAME_1_HW_I2C u8g(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
+U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
 
 /*
 = OLED screen =
@@ -692,12 +692,11 @@ void checkButton()
 
 void setup(void) {
   // initialize the pushbutton pin as an input:
-  u8g.begin();
   pinMode(buttonPin, INPUT);
   // Wait a bit
   delay(10);
   // flip screen, if required
-  u8g.setDisplayRotation(U8G2_R2);  // optional rotation
+  // u8g.setDisplayRotation(U8G2_R2);  // optional rotation
 }
 
 void loop(void) {
@@ -785,8 +784,8 @@ void loop(void) {
     gameMode = 1;
   }
   
-  u8g.firstPage();
-do {switch (gameMode) {
+  u8g.clearBuffer();
+    switch (gameMode) {
       case 0:
         // Idling
         animationStepMax = 4;
@@ -1386,5 +1385,5 @@ do {switch (gameMode) {
       u8g.drawStr(81, 60, scoreString);
     }
     delay(6);
-  } while (u8g.nextPage());
+  u8g.sendBuffer();
 }

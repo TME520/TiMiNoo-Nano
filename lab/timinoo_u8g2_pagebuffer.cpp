@@ -692,12 +692,11 @@ void checkButton()
 
 void setup(void) {
   // initialize the pushbutton pin as an input:
-  u8g.begin();
   pinMode(buttonPin, INPUT);
   // Wait a bit
   delay(10);
   // flip screen, if required
-  u8g.setDisplayRotation(U8G2_R2);  // optional rotation
+  // u8g.setDisplayRotation(U8G2_R2);  // optional rotation
 }
 
 void loop(void) {
