@@ -16,6 +16,11 @@ SDA  = A4
 GND = GND (3V)
 VCC = 3V
 SIG = 2
+
+= Text =
+
+Line: 21 chars
+5 lines
 */
 
 int gameMode = 99;
@@ -1356,7 +1361,7 @@ do {switch (gameMode) {
             } else {
               u8g.drawXBMP(49, 14, coco_cake_28x32_width, coco_cake_28x32_height, coco_cake_28x32_bits);
             }
-            u8g.drawStr(0, 59, "      Yum!      ");
+            u8g.drawStr(0, 59, "      Yum!");
             randomVisitCounter += 1;
             if (randomVisitCounter>shortWait) {
               randomVisitSequence = 0;
@@ -1372,7 +1377,12 @@ do {switch (gameMode) {
       case 99:
         // Show version
         u8g.setFont(u8g2_font_ncenB08_tr);  // Adjust font as needed
-        u8g.drawStr(0, 50, " TiMiNoo v1.3.0 ");
+        u8g.drawStr(0, 8, "000000000000000000000");
+        u8g.drawStr(0, 21, "000000000000000000000");
+        u8g.drawStr(0, 34, "000000000000000000000");
+        u8g.drawStr(0, 47, "000000000000000000000");
+        u8g.drawStr(0, 60, "000000000000000000000");
+        // u8g.drawStr(0, 50, "      TiMiNoo v1.3.1");
         versionCounter += 1;
         if (versionCounter>mediumWait) {
           gameMode = 0;
