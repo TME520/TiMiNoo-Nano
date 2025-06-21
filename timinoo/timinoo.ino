@@ -909,27 +909,27 @@ do {switch (gameMode) {
             switch (selectedFood) {
               case 1:
                 u8g.drawXBMP(50, 14, strawberry_28x28_width, strawberry_28x28_height, strawberry_28x28_bits);
-                u8g.drawStr(0, 60, "Yummy strawberry");
+                u8g.drawStr(20, 60, "Yummy strawberry");
                 break;
               case 2:
                 u8g.drawXBMP(50, 14, grape_28x28_width, grape_28x28_height, grape_28x28_bits);
-                u8g.drawStr(0, 60, "  Fresh grapes  ");
+                u8g.drawStr(20, 60, "Fresh grapes");
                 break;
               case 3:
                 u8g.drawXBMP(50, 14, milk_28x28_width, milk_28x28_height, milk_28x28_bits);
-                u8g.drawStr(0, 60, "   Farm milk    ");
+                u8g.drawStr(20, 60, "Farm milk");
                 break;
               case 4:
                 u8g.drawXBMP(50, 14, orange_28x28_width, orange_28x28_height, orange_28x28_bits);
-                u8g.drawStr(0, 60, "  Juicy orange  ");
+                u8g.drawStr(20, 60, "Juicy orange");
                 break;
               case 5:
                 u8g.drawXBMP(50, 14, apple_28x28_width, apple_28x28_height, apple_28x28_bits);
-                u8g.drawStr(0, 60, "  Tasty apple   ");
+                u8g.drawStr(35, 60, "Tasty apple");
                 break;
               case 6:
                 u8g.drawXBMP(50, 14, ghost_28x28_width, ghost_28x28_height, ghost_28x28_bits);
-                u8g.drawStr(0, 60, "    No food     ");
+                u8g.drawStr(20, 60, "No food :-(");
                 break;
             }
             feedCounter += 1;
