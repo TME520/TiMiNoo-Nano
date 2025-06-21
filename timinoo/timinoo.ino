@@ -21,6 +21,7 @@ SIG = 2
 
 Line: 21 chars
 5 lines
+Y Pos for lines: 8 / 21 / 34 / 47 / 60
 */
 
 int gameMode = 99;
@@ -908,27 +909,27 @@ do {switch (gameMode) {
             switch (selectedFood) {
               case 1:
                 u8g.drawXBMP(50, 14, strawberry_28x28_width, strawberry_28x28_height, strawberry_28x28_bits);
-                u8g.drawStr(0, 58, "Yummy strawberry");
+                u8g.drawStr(0, 60, "Yummy strawberry");
                 break;
               case 2:
                 u8g.drawXBMP(50, 14, grape_28x28_width, grape_28x28_height, grape_28x28_bits);
-                u8g.drawStr(0, 58, "  Fresh grapes  ");
+                u8g.drawStr(0, 60, "  Fresh grapes  ");
                 break;
               case 3:
                 u8g.drawXBMP(50, 14, milk_28x28_width, milk_28x28_height, milk_28x28_bits);
-                u8g.drawStr(0, 58, "   Farm milk    ");
+                u8g.drawStr(0, 60, "   Farm milk    ");
                 break;
               case 4:
                 u8g.drawXBMP(50, 14, orange_28x28_width, orange_28x28_height, orange_28x28_bits);
-                u8g.drawStr(0, 58, "  Juicy orange  ");
+                u8g.drawStr(0, 60, "  Juicy orange  ");
                 break;
               case 5:
                 u8g.drawXBMP(50, 14, apple_28x28_width, apple_28x28_height, apple_28x28_bits);
-                u8g.drawStr(0, 58, "  Tasty apple   ");
+                u8g.drawStr(0, 60, "  Tasty apple   ");
                 break;
               case 6:
                 u8g.drawXBMP(50, 14, ghost_28x28_width, ghost_28x28_height, ghost_28x28_bits);
-                u8g.drawStr(0, 58, "    No food     ");
+                u8g.drawStr(0, 60, "    No food     ");
                 break;
             }
             feedCounter += 1;
@@ -962,7 +963,7 @@ do {switch (gameMode) {
                 break;
             }
             if (selectedFood != 6) {
-              u8g.drawStr(0, 59, "      Yum!      ");
+              u8g.drawStr(0, 60, "          < Yum!");
             }
             feedCounter += 1;
             if (feedCounter>shortWait) {
@@ -1022,7 +1023,7 @@ do {switch (gameMode) {
             u8g.setFont(u8g2_font_ncenB08_tr);  // Adjust font as needed
             u8g.drawXBMP(-24, 13, cat_sitting_upscaled4x_001_width, cat_sitting_upscaled4x_001_height, cat_sitting_upscaled4x_001_bits);
             u8g.drawXBMP(97, 40, koko_le_snail_26x22_width, koko_le_snail_26x22_height, koko_le_snail_26x22_bits);
-            u8g.drawStr(0, 58, "       Hi! >    ");
+            u8g.drawStr(70, 60, "Hi! >");
             snailCounter += 1;
             if (snailCounter>shortWait) {
               snailCounter = 0;
@@ -1099,7 +1100,7 @@ do {switch (gameMode) {
             // Score
             u8g.setFont(u8g2_font_ncenB08_tr);  // Adjust font as needed
             u8g.drawXBMP(51, 12, study_26x28_width, study_26x28_height, study_26x28_bits);
-            u8g.drawStr(0, 58, "  + 1 Education ");
+            u8g.drawStr(0, 60, "  + 1 Education ");
             snailCounter += 1;
             if (snailCounter>shortWait) {
               snailCounter = 0;
@@ -1174,7 +1175,7 @@ do {switch (gameMode) {
             u8g.drawXBMP(81, 50, cuddle_heart_11x10_width, cuddle_heart_11x10_height, cuddle_heart_11x10_bits);
             u8g.drawXBMP(93, 50, cuddle_heart_11x10_width, cuddle_heart_11x10_height, cuddle_heart_11x10_bits);
             u8g.setFont(u8g2_font_ncenB08_tr);  // Adjust font as needed
-            u8g.drawStr(0, 16, "      All clean ");
+            u8g.drawStr(0, 21, "      All clean ");
             cleanCounter += 1;
             if (cleanCounter>shortWait) {
               cleanCounter = 0;
@@ -1249,37 +1250,37 @@ do {switch (gameMode) {
             case 0:
               // Ghost
               u8g.drawXBMP(50, 12, ghost_28x28_width, ghost_28x28_height, ghost_28x28_bits);
-              u8g.drawStr(0, 58, " Nothing, boo!  ");
+              u8g.drawStr(0, 60, " Nothing, boo!  ");
               break;
             case 1:
               // Bar
               u8g.drawXBMP(50, 12, bar_28x28_width, bar_28x28_height, bar_28x28_bits);
-              u8g.drawStr(0, 58, "  + 1 of all!   ");
+              u8g.drawStr(0, 60, "  + 1 of all!   ");
               break;
             case 2:
               // Strawberry
               u8g.drawXBMP(50, 12, strawberry_28x28_width, strawberry_28x28_height, strawberry_28x28_bits);
-              u8g.drawStr(0, 58, " + 1 strawberry ");
+              u8g.drawStr(0, 60, " + 1 strawberry ");
               break;
             case 3:
               // Apple
               u8g.drawXBMP(50, 12, apple_28x28_width, apple_28x28_height, apple_28x28_bits);
-              u8g.drawStr(0, 58, "   + 1 apple    ");
+              u8g.drawStr(0, 60, "   + 1 apple    ");
               break;
             case 4:
               // Grape
               u8g.drawXBMP(50, 12, grape_28x28_width, grape_28x28_height, grape_28x28_bits);
-              u8g.drawStr(0, 58, "   + 1 grape    ");
+              u8g.drawStr(0, 60, "   + 1 grape    ");
               break;
             case 5:
               // Milk
               u8g.drawXBMP(50, 12, milk_28x28_width, milk_28x28_height, milk_28x28_bits);
-              u8g.drawStr(0, 58, "    + 1 milk    ");
+              u8g.drawStr(0, 60, "    + 1 milk    ");
               break;
             case 6:
               // Orange
               u8g.drawXBMP(50, 12, orange_28x28_width, orange_28x28_height, orange_28x28_bits);
-              u8g.drawStr(0, 58, "   + 1 orange   ");
+              u8g.drawStr(0, 60, "   + 1 orange   ");
               break;
           }
           gameCounter += 1;
@@ -1301,7 +1302,7 @@ do {switch (gameMode) {
             // Knock
             checkButton();
             u8g.drawXBMP(50, 14, door_28x30_width, door_28x30_height, door_28x30_bits);
-            u8g.drawStr(40, 59, "Knock knock!");
+            u8g.drawStr(40, 60, "Knock knock!");
             randomVisitCounter += 1;
             if (randomVisitCounter>longWait) {
               randomVisitSequence = 1;
@@ -1312,7 +1313,7 @@ do {switch (gameMode) {
             // Hello
             u8g.drawXBMP(-24, 13, cat_sitting_upscaled4x_001_width, cat_sitting_upscaled4x_001_height, cat_sitting_upscaled4x_001_bits);
             u8g.drawXBMP(96, 14, cindy_28x26_width, cindy_28x26_height, cindy_28x26_bits);
-            u8g.drawStr(45, 59, "Hi friend!");
+            u8g.drawStr(45, 60, "Hi friend!");
             randomVisitCounter += 1;
             if (randomVisitCounter>shortWait) {
               randomVisitSequence = 2;
@@ -1325,9 +1326,9 @@ do {switch (gameMode) {
             u8g.drawXBMP(96, 14, cindy_28x26_width, cindy_28x26_height, cindy_28x26_bits);
             if (randomVisit<51) {
               // Matcha
-              u8g.drawStr(45, 59, "I got matcha tea!");
+              u8g.drawStr(45, 60, "I got matcha tea!");
             } else {
-              u8g.drawStr(45, 59, "I got coco cake!");
+              u8g.drawStr(45, 60, "I got coco cake!");
             }
             randomVisitCounter += 1;
             if (randomVisitCounter>shortWait) {
@@ -1345,7 +1346,7 @@ do {switch (gameMode) {
               u8g.drawXBMP(49, 14, coco_cake_28x32_width, coco_cake_28x32_height, coco_cake_28x32_bits);
             }
             u8g.drawXBMP(96, 14, cindy_28x26_width, cindy_28x26_height, cindy_28x26_bits);
-            u8g.drawStr(45, 59, "Have some <3");
+            u8g.drawStr(45, 60, "Have some <3");
             randomVisitCounter += 1;
             if (randomVisitCounter>shortWait) {
               randomVisitSequence = 4;
@@ -1361,7 +1362,7 @@ do {switch (gameMode) {
             } else {
               u8g.drawXBMP(49, 14, coco_cake_28x32_width, coco_cake_28x32_height, coco_cake_28x32_bits);
             }
-            u8g.drawStr(0, 59, "      Yum!");
+            u8g.drawStr(0, 60, "          < Yum!");
             randomVisitCounter += 1;
             if (randomVisitCounter>shortWait) {
               randomVisitSequence = 0;
@@ -1379,10 +1380,9 @@ do {switch (gameMode) {
         u8g.setFont(u8g2_font_ncenB08_tr);  // Adjust font as needed
         u8g.drawStr(0, 8, "000000000000000000000");
         u8g.drawStr(0, 21, "000000000000000000000");
-        u8g.drawStr(0, 34, "000000000000000000000");
+        u8g.drawStr(0, 34, "        TiMiNoo 1.3.1");
         u8g.drawStr(0, 47, "000000000000000000000");
         u8g.drawStr(0, 60, "000000000000000000000");
-        // u8g.drawStr(0, 50, "      TiMiNoo v1.3.1");
         versionCounter += 1;
         if (versionCounter>mediumWait) {
           gameMode = 0;
@@ -1395,6 +1395,6 @@ do {switch (gameMode) {
       ltoa(score, scoreString, 10);
       u8g.drawStr(81, 60, scoreString);
     }
-    delay(6);
+    delay(10);
   } while (u8g.nextPage());
 }
