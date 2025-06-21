@@ -1100,7 +1100,7 @@ do {switch (gameMode) {
             // Score
             u8g.setFont(u8g2_font_ncenB08_tr);  // Adjust font as needed
             u8g.drawXBMP(51, 12, study_26x28_width, study_26x28_height, study_26x28_bits);
-            u8g.drawStr(0, 60, "  + 1 Education ");
+            u8g.drawStr(20, 60, "  +1 Education ");
             snailCounter += 1;
             if (snailCounter>shortWait) {
               snailCounter = 0;
@@ -1250,37 +1250,37 @@ do {switch (gameMode) {
             case 0:
               // Ghost
               u8g.drawXBMP(50, 12, ghost_28x28_width, ghost_28x28_height, ghost_28x28_bits);
-              u8g.drawStr(0, 60, " Nothing, boo!  ");
+              u8g.drawStr(20, 60, "Nothing, boo!");
               break;
             case 1:
               // Bar
               u8g.drawXBMP(50, 12, bar_28x28_width, bar_28x28_height, bar_28x28_bits);
-              u8g.drawStr(0, 60, "  + 1 of all!   ");
+              u8g.drawStr(20, 60, "+1 of all!");
               break;
             case 2:
               // Strawberry
               u8g.drawXBMP(50, 12, strawberry_28x28_width, strawberry_28x28_height, strawberry_28x28_bits);
-              u8g.drawStr(0, 60, " + 1 strawberry ");
+              u8g.drawStr(20, 60, "+1 strawberry");
               break;
             case 3:
               // Apple
               u8g.drawXBMP(50, 12, apple_28x28_width, apple_28x28_height, apple_28x28_bits);
-              u8g.drawStr(0, 60, "   + 1 apple    ");
+              u8g.drawStr(20, 60, "+1 apple");
               break;
             case 4:
               // Grape
               u8g.drawXBMP(50, 12, grape_28x28_width, grape_28x28_height, grape_28x28_bits);
-              u8g.drawStr(0, 60, "   + 1 grape    ");
+              u8g.drawStr(20, 60, "+1 grape");
               break;
             case 5:
               // Milk
               u8g.drawXBMP(50, 12, milk_28x28_width, milk_28x28_height, milk_28x28_bits);
-              u8g.drawStr(0, 60, "    + 1 milk    ");
+              u8g.drawStr(20, 60, "+1 milk");
               break;
             case 6:
               // Orange
               u8g.drawXBMP(50, 12, orange_28x28_width, orange_28x28_height, orange_28x28_bits);
-              u8g.drawStr(0, 60, "   + 1 orange   ");
+              u8g.drawStr(20, 60, "+1 orange");
               break;
           }
           gameCounter += 1;
