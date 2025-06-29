@@ -61,6 +61,7 @@ int feedCounter = 0;
 int selectedFood = 0;
 int superHappyCounter = 0;
 long randomVisit = 0;
+long randomVisitTrigger = 500;
 int randomVisitSequence = 0;
 int randomVisitCounter = 0;
 long randomGameIconXPos = 0;
@@ -711,6 +712,7 @@ void setup(void) {
   // Output debug info on serial
   #ifdef DEBUG
     Serial.begin(9600);
+    Serial.println("---8<---");
     Serial.print("catHunger: ");
     Serial.println(catHunger);
     Serial.print("catHygiene: ");
@@ -788,10 +790,14 @@ void loop(void) {
     // Time to feed the cat
     currentIcon = 6;
     randomVisit = random(0, 3136);
-    if (randomVisit<2000 && randomVisit % 2 == 0) {
+    if (randomVisit<randomVisitTrigger && randomVisit % 2 == 0) {
       randomVisitSequence = 0;
       randomVisitCounter = 0;
       gameMode = 7;
+      #ifdef DEBUG
+        Serial.print("randomVisit: ");
+        Serial.println(randomVisit);
+      #endif
     } else {
       gameMode = 1;
     }
@@ -1342,7 +1348,7 @@ do {switch (gameMode) {
             // Gift
             u8g.drawXBMP(-24, 13, cat_sitting_upscaled4x_001_width, cat_sitting_upscaled4x_001_height, cat_sitting_upscaled4x_001_bits);
             u8g.drawXBMP(96, 14, cindy_28x26_width, cindy_28x26_height, cindy_28x26_bits);
-            if (randomVisit<51) {
+            if (randomVisit<100) {
               // Matcha
               u8g.drawStr(45, 60, "I got matcha tea!");
             } else {
@@ -1357,7 +1363,7 @@ do {switch (gameMode) {
           case 3:
             // Drink
             u8g.drawXBMP(-24, 13, cat_sitting_upscaled4x_001_width, cat_sitting_upscaled4x_001_height, cat_sitting_upscaled4x_001_bits);
-            if (randomVisit<51) {
+            if (randomVisit<100) {
               // Matcha
               u8g.drawXBMP(49, 14, matcha_30x32_width, matcha_30x32_height, matcha_30x32_bits);
             } else {
@@ -1374,13 +1380,13 @@ do {switch (gameMode) {
           case 4:
             // Bonus
             u8g.setFont(u8g2_font_ncenB08_tr);  // Adjust font as needed
-            if (randomVisit<51) {
+            if (randomVisit<100) {
               // Matcha
               u8g.drawXBMP(49, 14, matcha_30x32_width, matcha_30x32_height, matcha_30x32_bits);
             } else {
               u8g.drawXBMP(49, 14, coco_cake_28x32_width, coco_cake_28x32_height, coco_cake_28x32_bits);
             }
-            u8g.drawStr(0, 60, "          < Yum!");
+            u8g.drawStr(50, 60, "Yum!");
             randomVisitCounter += 1;
             if (randomVisitCounter>shortWait) {
               randomVisitSequence = 0;
