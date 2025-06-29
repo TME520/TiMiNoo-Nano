@@ -1,6 +1,8 @@
 #include <U8g2lib.h>
 #include <avr/pgmspace.h>
 
+#define DEBUG
+
 // U8GLIB_SH1106_128X64 u8g(13, 11, 10, 9); // SCK = 13, MOSI = 11, CS = 10, A0 = 9
 U8G2_SSD1306_128X64_NONAME_1_HW_I2C u8g(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
 
@@ -44,12 +46,12 @@ int cleanSequence = 0;
 int gameCounter = 0;
 int gameSequence = 0;
 long gamePick = 0;
-int strawberryFoodStock = 0;
-int appleFoodStock = 10000;
-int iceCreamFoodStock = 2;
-int grapeFoodStock = 0;
-int milkFoodStock = 0;
-int orangeFoodStock = 0;
+int strawberryFoodStock = 1;
+int appleFoodStock = 1;
+int iceCreamFoodStock = 1;
+int grapeFoodStock = 1;
+int milkFoodStock = 1;
+int orangeFoodStock = 1;
 int lessonSequence = 0;
 int snailCounter = 0;
 int kokoXPos = 0;
@@ -80,8 +82,8 @@ long catEntertainment = random(1, 4);
 
 // Status change timing (decrement status variable every x frames)
 // Production timings
-unsigned long catHungerStep = random(4000, 7000);
-// unsigned long catHungerStep = 1;
+// unsigned long catHungerStep = random(4000, 7000);
+unsigned long catHungerStep = 1;
 unsigned long catHygieneStep = random(9000, 19000);
 // unsigned long catHygieneStep = 1;
 unsigned long catMoraleStep = random(3000, 4000);
@@ -700,10 +702,26 @@ void setup(void) {
   // initialize the pushbutton pin as an input:
   u8g.begin();
   pinMode(buttonPin, INPUT);
+  // Better random numbers
+  randomSeed(analogRead(A0));
   // Wait a bit
   delay(10);
   // flip screen, if required
   u8g.setDisplayRotation(U8G2_R2);  // optional rotation
+  // Output debug info on serial
+  #ifdef DEBUG
+    Serial.begin(9600);
+    Serial.print("catHunger: ");
+    Serial.println(catHunger);
+    Serial.print("catHygiene: ");
+    Serial.println(catHygiene);
+    Serial.print("catMorale: ");
+    Serial.println(catMorale);
+    Serial.print("catEducation: ");
+    Serial.println(catEducation);
+    Serial.print("catEntertainment: ");
+    Serial.println(catEntertainment);
+  #endif
 }
 
 void loop(void) {
@@ -1175,7 +1193,7 @@ do {switch (gameMode) {
             u8g.drawXBMP(81, 50, cuddle_heart_11x10_width, cuddle_heart_11x10_height, cuddle_heart_11x10_bits);
             u8g.drawXBMP(93, 50, cuddle_heart_11x10_width, cuddle_heart_11x10_height, cuddle_heart_11x10_bits);
             u8g.setFont(u8g2_font_ncenB08_tr);  // Adjust font as needed
-            u8g.drawStr(0, 21, "      All clean ");
+            u8g.drawStr(50, 21, "All clean");
             cleanCounter += 1;
             if (cleanCounter>shortWait) {
               cleanCounter = 0;
@@ -1255,7 +1273,7 @@ do {switch (gameMode) {
             case 1:
               // Bar
               u8g.drawXBMP(50, 12, bar_28x28_width, bar_28x28_height, bar_28x28_bits);
-              u8g.drawStr(20, 60, "+1 of all!");
+              u8g.drawStr(30, 60, "+1 of all!");
               break;
             case 2:
               // Strawberry
@@ -1265,22 +1283,22 @@ do {switch (gameMode) {
             case 3:
               // Apple
               u8g.drawXBMP(50, 12, apple_28x28_width, apple_28x28_height, apple_28x28_bits);
-              u8g.drawStr(20, 60, "+1 apple");
+              u8g.drawStr(30, 60, "+1 apple");
               break;
             case 4:
               // Grape
               u8g.drawXBMP(50, 12, grape_28x28_width, grape_28x28_height, grape_28x28_bits);
-              u8g.drawStr(20, 60, "+1 grape");
+              u8g.drawStr(30, 60, "+1 grape");
               break;
             case 5:
               // Milk
               u8g.drawXBMP(50, 12, milk_28x28_width, milk_28x28_height, milk_28x28_bits);
-              u8g.drawStr(20, 60, "+1 milk");
+              u8g.drawStr(30, 60, "+1 milk");
               break;
             case 6:
               // Orange
               u8g.drawXBMP(50, 12, orange_28x28_width, orange_28x28_height, orange_28x28_bits);
-              u8g.drawStr(20, 60, "+1 orange");
+              u8g.drawStr(30, 60, "+1 orange");
               break;
           }
           gameCounter += 1;
@@ -1380,11 +1398,11 @@ do {switch (gameMode) {
         u8g.setFont(u8g2_font_ncenB08_tr);  // Adjust font as needed
         u8g.drawStr(0, 8, "000000000000000000000");
         u8g.drawStr(0, 21, "000000000000000000000");
-        u8g.drawStr(0, 34, "        TiMiNoo 1.3.1");
+        u8g.drawStr(0, 34, "        TiMiNoo 1.3.2");
         u8g.drawStr(0, 47, "000000000000000000000");
         u8g.drawStr(0, 60, "000000000000000000000");
         versionCounter += 1;
-        if (versionCounter>mediumWait) {
+        if (versionCounter>shortWait) {
           gameMode = 0;
         }
         break;
