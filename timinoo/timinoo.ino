@@ -1,7 +1,9 @@
 #include <U8g2lib.h>
 #include <avr/pgmspace.h>
+#include <EEPROM.h>
 
 #define DEBUG
+#define EEPROM_SIGNATURE 0x42C4A1
 
 // U8GLIB_SH1106_128X64 u8g(13, 11, 10, 9); // SCK = 13, MOSI = 11, CS = 10, A0 = 9
 U8G2_SSD1306_128X64_NONAME_1_HW_I2C u8g(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
@@ -27,7 +29,6 @@ Y Pos for lines: 8 / 21 / 34 / 47 / 60
 */
 
 int gameMode = 99;
-long score = 0;
 char scoreString[9];
 const char* textToDisplay = "";
 const int buttonPin = 2;
@@ -46,12 +47,6 @@ int cleanSequence = 0;
 int gameCounter = 0;
 int gameSequence = 0;
 long gamePick = 0;
-int strawberryFoodStock = 1;
-int appleFoodStock = 1;
-int iceCreamFoodStock = 1;
-int grapeFoodStock = 1;
-int milkFoodStock = 1;
-int orangeFoodStock = 1;
 int lessonSequence = 0;
 int snailCounter = 0;
 int kokoXPos = 0;
@@ -71,26 +66,33 @@ int versionCounter = 0;
 int shortWait = 100;
 int mediumWait = 300;
 int longWait = 600;
+unsigned long lastSaveTime = 0;
+const unsigned long saveInterval = 300000; // 5 minutes en millisecondes
 
 // Cat status variables
 // Status metrics
 // 0 = depleted, 1 = low, 2 = average, 3 = full
-long catHunger = 0;
-long catHygiene = 1;
-long catMorale = random(1, 4);
-long catEducation = 0;
-long catEntertainment = random(1, 4);
+struct CatStats {
+  long hunger;
+  long hygiene;
+  long morale;
+  long education;
+  long entertainment;
+  unsigned long hungerStep;
+  unsigned long hygieneStep;
+  unsigned long moraleStep;
+  unsigned long educationStep;
+  unsigned long entertainmentStep;
+  long score;
+  int strawberryFoodStock;
+  int appleFoodStock;
+  int iceCreamFoodStock;
+  int grapeFoodStock;
+  int milkFoodStock;
+  int orangeFoodStock;
+};
 
-// Status change timing (decrement status variable every x frames)
-// Production timings
-// unsigned long catHungerStep = random(4000, 7000);
-unsigned long catHungerStep = 1;
-unsigned long catHygieneStep = random(9000, 19000);
-// unsigned long catHygieneStep = 1;
-unsigned long catMoraleStep = random(3000, 4000);
-unsigned long catEducationStep = random(400, 1500);
-// unsigned long catEducationStep = 3;
-unsigned long catEntertainmentStep = random(300, 700);
+CatStats cat;
 
 // Tracking status checks
 unsigned long lastCatHungerCheck = 0;
@@ -584,6 +586,25 @@ static const unsigned char cuddle_heart_11x10_bits[] PROGMEM = {
    0x8c, 0x01, 0xde, 0x03, 0xff, 0x07, 0xff, 0x07, 0xff, 0x07, 0xfe, 0x03,
    0xfc, 0x01, 0xf8, 0x00, 0x70, 0x00, 0x20, 0x00 };
 
+void saveStatsToEEPROM() {
+  uint32_t signature = EEPROM_SIGNATURE;
+  EEPROM.put(0, signature);
+  EEPROM.put(sizeof(signature), cat);
+  Serial.println("Stats saved to EEPROM");
+}
+
+void loadStatsFromEEPROM() {
+  uint32_t signature = 0;
+  EEPROM.get(0, signature);
+
+  if (signature == EEPROM_SIGNATURE) {
+    EEPROM.get(sizeof(signature), cat);
+    Serial.println("Stats loaded from EEPROM");
+  } else {
+    Serial.println("Empty or invalid EEPROM");
+  }
+}
+
 void checkButton()
 {
   unsigned long currentTime = millis();
@@ -647,41 +668,41 @@ void checkButton()
           gamePick = random (0, 7);
           switch (gamePick) {
             case 0:
-              if (score>666 && frameCounter % 2 == 0) {
-                score -= 666;
+              if (cat.score>666 && frameCounter % 2 == 0) {
+                cat.score -= 666;
               } else {
                 gamePick = 6;
-                orangeFoodStock += 1;
-                score += 200;
+                cat.orangeFoodStock += 1;
+                cat.score += 200;
               }
               break;
             case 1:
-              strawberryFoodStock += 1;
-              appleFoodStock += 1;
-              grapeFoodStock += 1;
-              milkFoodStock += 1;
-              orangeFoodStock += 1;
-              score += 500;
+              cat.strawberryFoodStock += 1;
+              cat.appleFoodStock += 1;
+              cat.grapeFoodStock += 1;
+              cat.milkFoodStock += 1;
+              cat.orangeFoodStock += 1;
+              cat.score += 500;
               break;
             case 2:
-              strawberryFoodStock += 1;
-              score += 300;
+              cat.strawberryFoodStock += 1;
+              cat.score += 300;
               break;
             case 3:
-              appleFoodStock += 1;
-              score += 200;
+              cat.appleFoodStock += 1;
+              cat.score += 200;
               break;
             case 4:
-              grapeFoodStock += 1;
-              score += 200;
+              cat.grapeFoodStock += 1;
+              cat.score += 200;
               break;
             case 5:
-              milkFoodStock += 1;
-              score += 100;
+              cat.milkFoodStock += 1;
+              cat.score += 100;
               break;
             case 6:
-              orangeFoodStock += 1;
-              score += 200;
+              cat.orangeFoodStock += 1;
+              cat.score += 200;
               break;
           }
           gameSequence = 1;
@@ -709,21 +730,44 @@ void setup(void) {
   delay(10);
   // flip screen, if required
   u8g.setDisplayRotation(U8G2_R2);  // optional rotation
+  // Setting up cat stats
+  cat.hunger = 0;
+  cat.hygiene = 1;
+  cat.morale = random(1, 4);
+  cat.education = 0;
+  cat.entertainment = random(1, 4);
+  // cat.hungerStep = random(4000, 7000);
+  cat.hungerStep = 1;
+  cat.hygieneStep = random(9000, 19000);
+  // cat.hygieneStep = 1;
+  cat.moraleStep = random(3000, 4000);
+  cat.educationStep = random(400, 1500);
+  // cat.educationStep = 3;
+  cat.entertainmentStep = random(300, 700);
+  cat.strawberryFoodStock = 0;
+  cat.appleFoodStock = 4;
+  cat.iceCreamFoodStock = 0;
+  cat.grapeFoodStock = 0;
+  cat.milkFoodStock = 0;
+  cat.orangeFoodStock = 0;
   // Output debug info on serial
   #ifdef DEBUG
     Serial.begin(9600);
     Serial.println("---8<---");
-    Serial.print("catHunger: ");
-    Serial.println(catHunger);
-    Serial.print("catHygiene: ");
-    Serial.println(catHygiene);
-    Serial.print("catMorale: ");
-    Serial.println(catMorale);
-    Serial.print("catEducation: ");
-    Serial.println(catEducation);
-    Serial.print("catEntertainment: ");
-    Serial.println(catEntertainment);
+    Serial.print("cat.hunger: ");
+    Serial.println(cat.hunger);
+    Serial.print("cat.hygiene: ");
+    Serial.println(cat.hygiene);
+    Serial.print("cat.morale: ");
+    Serial.println(cat.morale);
+    Serial.print("cat.education: ");
+    Serial.println(cat.education);
+    Serial.print("cat.entertainment: ");
+    Serial.println(cat.entertainment);
+    Serial.print("cat.score: ");
+    Serial.println(cat.score);
   #endif
+  loadStatsFromEEPROM();
 }
 
 void loop(void) {
@@ -744,32 +788,32 @@ void loop(void) {
 
   // Refresh cat statistics
   // Hunger
-  if (frameCounter == lastCatHungerCheck + catHungerStep) {
-    catHunger -= 1;
-    if (catHunger < 0) {
-      catHunger = 0;
+  if (frameCounter == lastCatHungerCheck + cat.hungerStep) {
+    cat.hunger -= 1;
+    if (cat.hunger < 0) {
+      cat.hunger = 0;
     }
     lastCatHungerCheck = frameCounter;
   }
   // Hygiene
-  if (frameCounter == lastCatHygieneCheck + catHygieneStep) {
-    catHygiene -= 1;
-    if (catHygiene < 0) {
-      catHygiene = 0;
+  if (frameCounter == lastCatHygieneCheck + cat.hygieneStep) {
+    cat.hygiene -= 1;
+    if (cat.hygiene < 0) {
+      cat.hygiene = 0;
     }
     lastCatHygieneCheck = frameCounter;
   }
   // Morale
-  if (frameCounter == lastCatMoraleCheck + catMoraleStep) {
-    catMorale -= 1;
-    if (catMorale < 0) {
-      catMorale = 0;
+  if (frameCounter == lastCatMoraleCheck + cat.moraleStep) {
+    cat.morale -= 1;
+    if (cat.morale < 0) {
+      cat.morale = 0;
     }
     lastCatMoraleCheck = frameCounter;
   }
   // Education
-  if (frameCounter == lastCatEducationCheck + catEducationStep) {
-    if (catEducation < 3 && gameMode == 0) {
+  if (frameCounter == lastCatEducationCheck + cat.educationStep) {
+    if (cat.education < 3 && gameMode == 0) {
       // Time to study
       currentIcon = 3;
       gameMode = 1;
@@ -777,16 +821,16 @@ void loop(void) {
     lastCatEducationCheck = frameCounter;
   }
   // Entertainment
-  if (frameCounter == lastCatEntertainmentCheck + catEntertainmentStep) {
-    catEntertainment -= 1;
-    if (catEntertainment < 0) {
-      catEntertainment = 0;
+  if (frameCounter == lastCatEntertainmentCheck + cat.entertainmentStep) {
+    cat.entertainment -= 1;
+    if (cat.entertainment < 0) {
+      cat.entertainment = 0;
     }
     lastCatEntertainmentCheck = frameCounter;
   }
 
   // Act on cat stats
-  if (catHunger == 0 && gameMode == 0) {
+  if (cat.hunger == 0 && gameMode == 0) {
     // Time to feed the cat
     currentIcon = 6;
     randomVisit = random(0, 3136);
@@ -801,624 +845,624 @@ void loop(void) {
     } else {
       gameMode = 1;
     }
-  } else if (catHygiene==0 && gameMode == 0) {
+  } else if (cat.hygiene==0 && gameMode == 0) {
     // Time to clean
     currentIcon = 5;
     gameMode = 1;
-  } else if (catMorale==0 && gameMode == 0) {
+  } else if (cat.morale==0 && gameMode == 0) {
     // Time to cuddle
     currentIcon = 4;
     gameMode = 1;
-  } else if (catEntertainment==0 && gameMode == 0) {
+  } else if (cat.entertainment==0 && gameMode == 0) {
     // Time to play
     currentIcon = 2;
     gameMode = 1;
   }
   
   u8g.firstPage();
-do {switch (gameMode) {
-      case 0:
-        // Idling
-        animationStepMax = 4;
-        checkButton();
-        // Icon frame
-        u8g.drawXBMP(69, 1, speech_bubble_56x48_width, speech_bubble_56x48_height, speech_bubble_56x48_bits);
-        // Icon (always happy)
-        if (superHappyCounter<1) {
-          u8g.drawXBMP(87, 12, happy_cat_28x28_width, happy_cat_28x28_height, happy_cat_28x28_bits);
-        } else {
-          u8g.drawXBMP(87, 12, super_happy_28x28_width, super_happy_28x28_height, super_happy_28x28_bits);
-          superHappyCounter -= 1;
-        }
-        switch (animationStep) {
-          case 1:
-            checkButton();
-            u8g.drawXBMP(8, 8, cat_sitting_upscaled4x_001_width, cat_sitting_upscaled4x_001_height, cat_sitting_upscaled4x_001_bits);
-            break;
-          case 2:
-            checkButton();
-            u8g.drawXBMP(8, 8, cat_sitting_upscaled4x_002_width, cat_sitting_upscaled4x_002_height, cat_sitting_upscaled4x_002_bits);
-            break;
-          case 3:
-            checkButton();
-            u8g.drawXBMP(8, 8, cat_sitting_upscaled4x_003_width, cat_sitting_upscaled4x_003_height, cat_sitting_upscaled4x_003_bits);
-            break;
-          case 4:
-            checkButton();
-            u8g.drawXBMP(8, 8, cat_sitting_upscaled4x_004_width, cat_sitting_upscaled4x_004_height, cat_sitting_upscaled4x_004_bits);
-            break;
-        }
-        break;
-      case 1:
-        // Idle - looking left
-        animationStepMax = 4;
-        checkButton();
-        // Icon frame
-        u8g.drawXBMP(69, 1, speech_bubble_56x48_width, speech_bubble_56x48_height, speech_bubble_56x48_bits);
-        // Icon (anything else than happy)
-        switch (currentIcon) {
-          case 2:
-            // Play
-            u8g.drawXBMP(85, 16, play_32x20_width, play_32x20_height, play_32x20_bits);
-            break;
-          case 3:
-            // Study
-            u8g.drawXBMP(88, 12, study_26x28_width, study_26x28_height, study_26x28_bits);
-            break;
-          case 4:
-            // Cuddle
-            u8g.drawXBMP(89, 14, cuddle_24x24_width, cuddle_24x24_height, cuddle_24x24_bits);
-            break;
-          case 5:
-            // Bubbles
-            u8g.drawXBMP(86, 11, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
-            break;
-          case 6:
-            // Pizza
-            u8g.drawXBMP(88, 12, pizza_26x28_width, pizza_26x28_height, pizza_26x28_bits);
-            break;
-        }
-        switch (animationStep) {
-          case 1:
-            checkButton();
-            u8g.drawXBMP(8, 8, cat_sitting_upscaled4x_001_width, cat_sitting_upscaled4x_001_height, cat_sitting_upscaled4x_001_bits);
-            break;
-          case 2:
-            checkButton();
-            u8g.drawXBMP(8, 8, cat_sitting_upscaled4x_006_width, cat_sitting_upscaled4x_006_height, cat_sitting_upscaled4x_006_bits);
-            break;
-          case 3:
-            checkButton();
-            u8g.drawXBMP(8, 8, cat_sitting_upscaled4x_007_width, cat_sitting_upscaled4x_007_height, cat_sitting_upscaled4x_007_bits);
-            break;
-          case 4:
-            checkButton();
-            u8g.drawXBMP(8, 8, cat_sitting_upscaled4x_004_width, cat_sitting_upscaled4x_004_height, cat_sitting_upscaled4x_004_bits);
-            break;
-        }
-        break;
-      case 2:
-        // Feed
-        u8g.setFont(u8g2_font_ncenB08_tr);  // Adjust font as needed
-        switch (feedSequence) {
-          case 0:
-            // Select food
-            if (strawberryFoodStock > 0) {
-              selectedFood = 1;
-              strawberryFoodStock -= 1;
-              score += 30;
-            } else if (grapeFoodStock > 0) {
-              selectedFood = 2;
-              grapeFoodStock -= 1;
-              score += 20;
-            } else if (milkFoodStock > 0) {
-              selectedFood = 3;
-              milkFoodStock -= 1;
-              score += 10;
-            } else if (orangeFoodStock > 0) {
-              selectedFood = 4;
-              orangeFoodStock -= 1;
-              score += 20;
-            } else if (appleFoodStock > 0) {
-              selectedFood = 5;
-              appleFoodStock -= 1;
-              score += 20;
-            } else {
-              selectedFood = 6;
-            }
-            feedSequence = 1;
-            break;
-          case 1:
-            // Eat food
-            switch (selectedFood) {
-              case 1:
-                u8g.drawXBMP(50, 14, strawberry_28x28_width, strawberry_28x28_height, strawberry_28x28_bits);
-                u8g.drawStr(10, 60, "Yummy strawberry");
-                break;
-              case 2:
-                u8g.drawXBMP(50, 14, grape_28x28_width, grape_28x28_height, grape_28x28_bits);
-                u8g.drawStr(30, 60, "Fresh grapes");
-                break;
-              case 3:
-                u8g.drawXBMP(50, 14, milk_28x28_width, milk_28x28_height, milk_28x28_bits);
-                u8g.drawStr(35, 60, "Farm milk");
-                break;
-              case 4:
-                u8g.drawXBMP(50, 14, orange_28x28_width, orange_28x28_height, orange_28x28_bits);
-                u8g.drawStr(30, 60, "Juicy orange");
-                break;
-              case 5:
-                u8g.drawXBMP(50, 14, apple_28x28_width, apple_28x28_height, apple_28x28_bits);
-                u8g.drawStr(35, 60, "Tasty apple");
-                break;
-              case 6:
-                u8g.drawXBMP(50, 14, ghost_28x28_width, ghost_28x28_height, ghost_28x28_bits);
-                u8g.drawStr(32, 60, "No food :-(");
-                break;
-            }
-            feedCounter += 1;
-            if (feedCounter>shortWait) {
-              feedCounter = 0;
-              if (selectedFood != 6) {
-                feedSequence = 2;
+  do {switch (gameMode) {
+        case 0:
+          // Idling
+          animationStepMax = 4;
+          checkButton();
+          // Icon frame
+          u8g.drawXBMP(69, 1, speech_bubble_56x48_width, speech_bubble_56x48_height, speech_bubble_56x48_bits);
+          // Icon (always happy)
+          if (superHappyCounter<1) {
+            u8g.drawXBMP(87, 12, happy_cat_28x28_width, happy_cat_28x28_height, happy_cat_28x28_bits);
+          } else {
+            u8g.drawXBMP(87, 12, super_happy_28x28_width, super_happy_28x28_height, super_happy_28x28_bits);
+            superHappyCounter -= 1;
+          }
+          switch (animationStep) {
+            case 1:
+              checkButton();
+              u8g.drawXBMP(8, 8, cat_sitting_upscaled4x_001_width, cat_sitting_upscaled4x_001_height, cat_sitting_upscaled4x_001_bits);
+              break;
+            case 2:
+              checkButton();
+              u8g.drawXBMP(8, 8, cat_sitting_upscaled4x_002_width, cat_sitting_upscaled4x_002_height, cat_sitting_upscaled4x_002_bits);
+              break;
+            case 3:
+              checkButton();
+              u8g.drawXBMP(8, 8, cat_sitting_upscaled4x_003_width, cat_sitting_upscaled4x_003_height, cat_sitting_upscaled4x_003_bits);
+              break;
+            case 4:
+              checkButton();
+              u8g.drawXBMP(8, 8, cat_sitting_upscaled4x_004_width, cat_sitting_upscaled4x_004_height, cat_sitting_upscaled4x_004_bits);
+              break;
+          }
+          break;
+        case 1:
+          // Idle - looking left
+          animationStepMax = 4;
+          checkButton();
+          // Icon frame
+          u8g.drawXBMP(69, 1, speech_bubble_56x48_width, speech_bubble_56x48_height, speech_bubble_56x48_bits);
+          // Icon (anything else than happy)
+          switch (currentIcon) {
+            case 2:
+              // Play
+              u8g.drawXBMP(85, 16, play_32x20_width, play_32x20_height, play_32x20_bits);
+              break;
+            case 3:
+              // Study
+              u8g.drawXBMP(88, 12, study_26x28_width, study_26x28_height, study_26x28_bits);
+              break;
+            case 4:
+              // Cuddle
+              u8g.drawXBMP(89, 14, cuddle_24x24_width, cuddle_24x24_height, cuddle_24x24_bits);
+              break;
+            case 5:
+              // Bubbles
+              u8g.drawXBMP(86, 11, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
+              break;
+            case 6:
+              // Pizza
+              u8g.drawXBMP(88, 12, pizza_26x28_width, pizza_26x28_height, pizza_26x28_bits);
+              break;
+          }
+          switch (animationStep) {
+            case 1:
+              checkButton();
+              u8g.drawXBMP(8, 8, cat_sitting_upscaled4x_001_width, cat_sitting_upscaled4x_001_height, cat_sitting_upscaled4x_001_bits);
+              break;
+            case 2:
+              checkButton();
+              u8g.drawXBMP(8, 8, cat_sitting_upscaled4x_006_width, cat_sitting_upscaled4x_006_height, cat_sitting_upscaled4x_006_bits);
+              break;
+            case 3:
+              checkButton();
+              u8g.drawXBMP(8, 8, cat_sitting_upscaled4x_007_width, cat_sitting_upscaled4x_007_height, cat_sitting_upscaled4x_007_bits);
+              break;
+            case 4:
+              checkButton();
+              u8g.drawXBMP(8, 8, cat_sitting_upscaled4x_004_width, cat_sitting_upscaled4x_004_height, cat_sitting_upscaled4x_004_bits);
+              break;
+          }
+          break;
+        case 2:
+          // Feed
+          u8g.setFont(u8g2_font_ncenB08_tr);  // Adjust font as needed
+          switch (feedSequence) {
+            case 0:
+              // Select food
+              if (cat.strawberryFoodStock > 0) {
+                selectedFood = 1;
+                cat.strawberryFoodStock -= 1;
+                cat.score += 30;
+              } else if (cat.grapeFoodStock > 0) {
+                selectedFood = 2;
+                cat.grapeFoodStock -= 1;
+                cat.score += 20;
+              } else if (cat.milkFoodStock > 0) {
+                selectedFood = 3;
+                cat.milkFoodStock -= 1;
+                cat.score += 10;
+              } else if (cat.orangeFoodStock > 0) {
+                selectedFood = 4;
+                cat.orangeFoodStock -= 1;
+                cat.score += 20;
+              } else if (cat.appleFoodStock > 0) {
+                selectedFood = 5;
+                cat.appleFoodStock -= 1;
+                cat.score += 20;
               } else {
+                selectedFood = 6;
+              }
+              feedSequence = 1;
+              break;
+            case 1:
+              // Eat food
+              switch (selectedFood) {
+                case 1:
+                  u8g.drawXBMP(50, 14, strawberry_28x28_width, strawberry_28x28_height, strawberry_28x28_bits);
+                  u8g.drawStr(10, 60, "Yummy strawberry");
+                  break;
+                case 2:
+                  u8g.drawXBMP(50, 14, grape_28x28_width, grape_28x28_height, grape_28x28_bits);
+                  u8g.drawStr(30, 60, "Fresh grapes");
+                  break;
+                case 3:
+                  u8g.drawXBMP(50, 14, milk_28x28_width, milk_28x28_height, milk_28x28_bits);
+                  u8g.drawStr(35, 60, "Farm milk");
+                  break;
+                case 4:
+                  u8g.drawXBMP(50, 14, orange_28x28_width, orange_28x28_height, orange_28x28_bits);
+                  u8g.drawStr(30, 60, "Juicy orange");
+                  break;
+                case 5:
+                  u8g.drawXBMP(50, 14, apple_28x28_width, apple_28x28_height, apple_28x28_bits);
+                  u8g.drawStr(35, 60, "Tasty apple");
+                  break;
+                case 6:
+                  u8g.drawXBMP(50, 14, ghost_28x28_width, ghost_28x28_height, ghost_28x28_bits);
+                  u8g.drawStr(32, 60, "No food :-(");
+                  break;
+              }
+              feedCounter += 1;
+              if (feedCounter>shortWait) {
+                feedCounter = 0;
+                if (selectedFood != 6) {
+                  feedSequence = 2;
+                } else {
+                  gameMode = 0;
+                }
+              }
+              break;
+            case 2:
+              // Yum
+              u8g.drawXBMP(-24, 13, cat_sitting_upscaled4x_001_width, cat_sitting_upscaled4x_001_height, cat_sitting_upscaled4x_001_bits);
+              switch (selectedFood) {
+                case 1:
+                  u8g.drawXBMP(50, 14, strawberry_28x28_width, strawberry_28x28_height, strawberry_28x28_bits);
+                  break;
+                case 2:
+                  u8g.drawXBMP(50, 14, grape_28x28_width, grape_28x28_height, grape_28x28_bits);
+                  break;
+                case 3:
+                  u8g.drawXBMP(50, 14, milk_28x28_width, milk_28x28_height, milk_28x28_bits);
+                  break;
+                case 4:
+                  u8g.drawXBMP(50, 14, orange_28x28_width, orange_28x28_height, orange_28x28_bits);
+                  break;
+                case 5:
+                  u8g.drawXBMP(50, 14, apple_28x28_width, apple_28x28_height, apple_28x28_bits);
+                  break;
+              }
+              if (selectedFood != 6) {
+                u8g.drawStr(0, 60, "          < Yum!");
+              }
+              feedCounter += 1;
+              if (feedCounter>shortWait) {
+                feedCounter = 0;
+                if (selectedFood < 6) {
+                  superHappyCounter = 100;
+                  cat.hunger = 3;
+                }
                 gameMode = 0;
               }
+              break;
+          }
+          break;
+        case 3:
+          // Cuddle
+          u8g.drawXBMP(8, 8, cat_sitting_upscaled4x_001_width, cat_sitting_upscaled4x_001_height, cat_sitting_upscaled4x_001_bits);
+          cuddleCounter += 1;
+          if (cuddleCounter<31) {
+            u8g.drawXBMP(80, 45 - cuddleCounter, cuddle_heart_11x10_width, cuddle_heart_11x10_height, cuddle_heart_11x10_bits);
+            u8g.drawXBMP(92, 40 - cuddleCounter, cuddle_heart_11x10_width, cuddle_heart_11x10_height, cuddle_heart_11x10_bits);
+            u8g.drawXBMP(104, 45 - cuddleCounter, cuddle_heart_11x10_width, cuddle_heart_11x10_height, cuddle_heart_11x10_bits);
+          } else if (cuddleCounter>30 && cuddleCounter < 161) {
+            u8g.drawXBMP(80, 15, cuddle_heart_11x10_width, cuddle_heart_11x10_height, cuddle_heart_11x10_bits);
+            u8g.drawXBMP(92, 10, cuddle_heart_11x10_width, cuddle_heart_11x10_height, cuddle_heart_11x10_bits);
+            u8g.drawXBMP(104, 15, cuddle_heart_11x10_width, cuddle_heart_11x10_height, cuddle_heart_11x10_bits);
+            u8g.setFont(u8g_font_baby);
+            u8g.drawStr(70, 40, "I love you too");
+          } else if (cuddleCounter>160 && cuddleCounter < 240) {
+            u8g.setFont(u8g_font_baby);
+            u8g.drawStr(70, 40, "I love you too");
+          } else if (cuddleCounter==240) {
+            superHappyCounter = 100;
+            cat.score += 50;
+            cat.morale = 3;
+            gameMode = 0;
+          }
+          break;
+        case 4:
+          // Educate
+          switch (lessonSequence) {
+            case 0:
+              // Snail arrives
+              u8g.drawXBMP(-24, 13, cat_sitting_upscaled4x_001_width, cat_sitting_upscaled4x_001_height, cat_sitting_upscaled4x_001_bits);
+              u8g.drawXBMP(kokoXPos, 40, koko_le_snail_26x22_width, koko_le_snail_26x22_height, koko_le_snail_26x22_bits);
+              kokoXPos -= 1;
+              if (kokoXPos < 97) {
+                kokoXPos = 97;
+              }
+              snailCounter += 1;
+              if (snailCounter>shortWait) {
+                snailCounter = 0;
+                lessonSequence = 1;
+              }
+              break;
+            case 1:
+              // Snail says hello
+              u8g.setFont(u8g2_font_ncenB08_tr);  // Adjust font as needed
+              u8g.drawXBMP(-24, 13, cat_sitting_upscaled4x_001_width, cat_sitting_upscaled4x_001_height, cat_sitting_upscaled4x_001_bits);
+              u8g.drawXBMP(97, 40, koko_le_snail_26x22_width, koko_le_snail_26x22_height, koko_le_snail_26x22_bits);
+              u8g.drawStr(70, 60, "Hi! >");
+              snailCounter += 1;
+              if (snailCounter>shortWait) {
+                snailCounter = 0;
+                lessonSequence = 2;
+              }
+              break;
+            case 2:
+              // Introduction
+              u8g.drawLine(0, 8, 127, 8);
+              u8g.drawLine(0, 56, 127, 56);
+              u8g.setFont(u8g_font_baby);
+              u8g.drawXBMP(97, 21, koko_le_snail_26x22_width, koko_le_snail_26x22_height, koko_le_snail_26x22_bits);
+              u8g.drawStr(16, 18, "Get ready for a");
+              u8g.drawStr(16, 24, "new lesson with...");
+              u8g.drawStr(16, 30, "");
+              u8g.drawStr(16, 36, "~ Koko Le Snail ~");
+              snailCounter += 1;
+              if (snailCounter>shortWait) {
+                snailCounter = 0;
+                lessonSequence = 3;
+              }
+              break;
+            case 3:
+              // Snail wisdom quote
+              u8g.drawLine(0, 8, 127, 8);
+              u8g.drawLine(0, 56, 127, 56);
+              u8g.setFont(u8g_font_baby);
+              u8g.drawXBMP(97, 21, koko_le_snail_26x22_width, koko_le_snail_26x22_height, koko_le_snail_26x22_bits);
+              switch (randomQuote) {
+                case 1:
+                  u8g.drawStr(16, 18, "Sometimes dogs");
+                  u8g.drawStr(16, 24, "are grey.");
+                  u8g.drawStr(16, 30, "");
+                  u8g.drawStr(16, 36, "  -- Koko");
+                  break;
+                case 2:
+                  u8g.drawStr(16, 18, "Do not sneeze");
+                  u8g.drawStr(16, 24, "on the bus.");
+                  u8g.drawStr(16, 30, "");
+                  u8g.drawStr(16, 36, "  -- Koko");
+                  break;
+                case 3:
+                  u8g.drawStr(16, 18, "Always wear");
+                  u8g.drawStr(16, 24, "pants.");
+                  u8g.drawStr(16, 30, "");
+                  u8g.drawStr(16, 36, "  -- Koko");
+                  break;
+                case 4:
+                  u8g.drawStr(16, 18, "Never yawn");
+                  u8g.drawStr(16, 24, "during class.");
+                  u8g.drawStr(16, 30, "");
+                  u8g.drawStr(16, 36, "  -- Koko");
+                  break;
+                case 5:
+                  u8g.drawStr(16, 18, "Wash your hands");
+                  u8g.drawStr(16, 24, "after lunch.");
+                  u8g.drawStr(16, 30, "");
+                  u8g.drawStr(16, 36, "  -- Koko");
+                  break;
+                case 6:
+                  u8g.drawStr(16, 18, "Pull my finger...");
+                  u8g.drawStr(16, 24, "teehee!");
+                  u8g.drawStr(16, 30, "");
+                  u8g.drawStr(16, 36, "  -- Koko");
+                  break;
+              }
+              snailCounter += 1;
+              if (snailCounter>mediumWait) {
+                snailCounter = 0;
+                lessonSequence = 4;
+              }
+              break;
+            case 4:
+              // Score
+              u8g.setFont(u8g2_font_ncenB08_tr);  // Adjust font as needed
+              u8g.drawXBMP(51, 12, study_26x28_width, study_26x28_height, study_26x28_bits);
+              u8g.drawStr(20, 60, "  +1 Education ");
+              snailCounter += 1;
+              if (snailCounter>shortWait) {
+                snailCounter = 0;
+                superHappyCounter = 100;
+                cat.score += 100;
+                cat.education += 1;
+                gameMode = 0;
+              }
+              break;
+          }
+          break;
+        case 5:
+          // Clean
+          switch (cleanSequence) {
+            case 0:
+              // Clean The Cat game
+              u8g.drawXBMP(38, 8, cat_sitting_upscaled4x_001_width, cat_sitting_upscaled4x_001_height, cat_sitting_upscaled4x_001_bits);
+              checkButton();
+              cleanCounter -= 1;
+              if (cleanCounter<0) {
+                cleanCounter = 0;
+              } else if (cleanCounter>shortWait) {
+                cleanCounter = 0;
+                cleanSequence = 1;
+              }
+              switch(cleanCounter) {
+                case 5 ... 15:
+                  u8g.drawXBMP(38, 32, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
+                  break;
+                case 16 ... 36:
+                  u8g.drawXBMP(38, 32, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
+                  u8g.drawXBMP(58, 32, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
+                  break;
+                case 37 ... 57:
+                  u8g.drawXBMP(23, 16, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
+                  u8g.drawXBMP(38, 32, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
+                  u8g.drawXBMP(58, 32, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
+                  u8g.drawXBMP(73, 16, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
+                  break;
+                case 58 ... 78:
+                  u8g.drawXBMP(23, 16, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
+                  u8g.drawXBMP(38, 32, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
+                  u8g.drawXBMP(58, 32, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
+                  u8g.drawXBMP(73, 16, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
+                  u8g.drawXBMP(32, 0, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
+                  u8g.drawXBMP(64, 0, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
+                  break;
+                case 79 ... 89:
+                  u8g.drawXBMP(23, 16, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
+                  u8g.drawXBMP(38, 32, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
+                  u8g.drawXBMP(58, 32, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
+                  u8g.drawXBMP(73, 16, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
+                  u8g.drawXBMP(0, 32, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
+                  u8g.drawXBMP(32, 0, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
+                  u8g.drawXBMP(64, 0, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
+                  u8g.drawXBMP(96, 32, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
+                  break;
+                case 90 ... 100:
+                  u8g.drawXBMP(0, 0, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
+                  u8g.drawXBMP(32, 0, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
+                  u8g.drawXBMP(64, 0, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
+                  u8g.drawXBMP(96, 0, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
+                  u8g.drawXBMP(0, 32, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
+                  u8g.drawXBMP(32, 32, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
+                  u8g.drawXBMP(64, 32, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
+                  u8g.drawXBMP(96, 32, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
+              }
+              break;
+            case 1:
+              u8g.drawXBMP(-24, 13, cat_sitting_upscaled4x_001_width, cat_sitting_upscaled4x_001_height, cat_sitting_upscaled4x_001_bits);
+              u8g.drawXBMP(69, 50, cuddle_heart_11x10_width, cuddle_heart_11x10_height, cuddle_heart_11x10_bits);
+              u8g.drawXBMP(81, 50, cuddle_heart_11x10_width, cuddle_heart_11x10_height, cuddle_heart_11x10_bits);
+              u8g.drawXBMP(93, 50, cuddle_heart_11x10_width, cuddle_heart_11x10_height, cuddle_heart_11x10_bits);
+              u8g.setFont(u8g2_font_ncenB08_tr);  // Adjust font as needed
+              u8g.drawStr(50, 21, "All clean");
+              cleanCounter += 1;
+              if (cleanCounter>shortWait) {
+                cleanCounter = 0;
+                superHappyCounter = 100;
+                cat.score += 200;
+                cat.hygiene = 3;
+                gameMode = 0;
+              }
+              break;
+          }
+          break;
+        case 6:
+          // Play
+          if (gameSequence == 0) {
+            // Roll the dice
+            checkButton();
+            animationStepMax = 7;
+            u8g.setFont(u8g_font_baby);
+            u8g.drawStr(13, 6, "xxxx Catsino Deluxe xxxx");
+            u8g.drawXBMP(3, 18, casino_frame_40x40_width, casino_frame_40x40_height, casino_frame_40x40_bits);
+            u8g.drawXBMP(44, 18, casino_frame_40x40_width, casino_frame_40x40_height, casino_frame_40x40_bits);
+            u8g.drawXBMP(85, 18, casino_frame_40x40_width, casino_frame_40x40_height, casino_frame_40x40_bits);
+            checkButton();
+            if ( (gameCounter % 3) == 0) {
+              randomGameIconXPos = random(0, 3);
+              randomFoodType = random(0, 7);
             }
-            break;
-          case 2:
-            // Yum
-            u8g.drawXBMP(-24, 13, cat_sitting_upscaled4x_001_width, cat_sitting_upscaled4x_001_height, cat_sitting_upscaled4x_001_bits);
-            switch (selectedFood) {
+            switch (randomGameIconXPos) {
+              case 0:
+                gameIconXPos = 9;
+                break;
               case 1:
-                u8g.drawXBMP(50, 14, strawberry_28x28_width, strawberry_28x28_height, strawberry_28x28_bits);
+                gameIconXPos = 50;
                 break;
               case 2:
-                u8g.drawXBMP(50, 14, grape_28x28_width, grape_28x28_height, grape_28x28_bits);
+                gameIconXPos = 91;
+                break;
+            }
+            checkButton();
+            switch (randomFoodType) {
+              case 0:
+                u8g.drawXBMP(gameIconXPos, 24, ghost_28x28_width, ghost_28x28_height, ghost_28x28_bits);
+                break;
+              case 1:
+                u8g.drawXBMP(gameIconXPos, 24, bar_28x28_width, bar_28x28_height, bar_28x28_bits);
+                break;
+              case 2:
+                u8g.drawXBMP(gameIconXPos, 24, strawberry_28x28_width, strawberry_28x28_height, strawberry_28x28_bits);
                 break;
               case 3:
-                u8g.drawXBMP(50, 14, milk_28x28_width, milk_28x28_height, milk_28x28_bits);
+                u8g.drawXBMP(gameIconXPos, 24, apple_28x28_width, apple_28x28_height, apple_28x28_bits);
                 break;
               case 4:
-                u8g.drawXBMP(50, 14, orange_28x28_width, orange_28x28_height, orange_28x28_bits);
+                u8g.drawXBMP(gameIconXPos, 24, grape_28x28_width, grape_28x28_height, grape_28x28_bits);
                 break;
               case 5:
-                u8g.drawXBMP(50, 14, apple_28x28_width, apple_28x28_height, apple_28x28_bits);
+                u8g.drawXBMP(gameIconXPos, 24, milk_28x28_width, milk_28x28_height, milk_28x28_bits);
+                break;
+              case 6:
+                u8g.drawXBMP(gameIconXPos, 24, orange_28x28_width, orange_28x28_height, orange_28x28_bits);
                 break;
             }
-            if (selectedFood != 6) {
-              u8g.drawStr(0, 60, "          < Yum!");
+            gameCounter += 1;
+            if (gameCounter>longWait) {
+              gameCounter = 0;
+              gameMode = 0;
             }
-            feedCounter += 1;
-            if (feedCounter>shortWait) {
-              feedCounter = 0;
-              if (selectedFood < 6) {
+          } else if (gameSequence == 1) {
+            // See the result
+            u8g.setFont(u8g2_font_ncenB08_tr);  // Adjust font as needed
+            switch (gamePick) {
+              case 0:
+                // Ghost
+                u8g.drawXBMP(50, 12, ghost_28x28_width, ghost_28x28_height, ghost_28x28_bits);
+                u8g.drawStr(20, 60, "Nothing, boo!");
+                break;
+              case 1:
+                // Bar
+                u8g.drawXBMP(50, 12, bar_28x28_width, bar_28x28_height, bar_28x28_bits);
+                u8g.drawStr(30, 60, "+1 of all!");
+                break;
+              case 2:
+                // Strawberry
+                u8g.drawXBMP(50, 12, strawberry_28x28_width, strawberry_28x28_height, strawberry_28x28_bits);
+                u8g.drawStr(20, 60, "+1 strawberry");
+                break;
+              case 3:
+                // Apple
+                u8g.drawXBMP(50, 12, apple_28x28_width, apple_28x28_height, apple_28x28_bits);
+                u8g.drawStr(30, 60, "+1 apple");
+                break;
+              case 4:
+                // Grape
+                u8g.drawXBMP(50, 12, grape_28x28_width, grape_28x28_height, grape_28x28_bits);
+                u8g.drawStr(30, 60, "+1 grape");
+                break;
+              case 5:
+                // Milk
+                u8g.drawXBMP(50, 12, milk_28x28_width, milk_28x28_height, milk_28x28_bits);
+                u8g.drawStr(30, 60, "+1 milk");
+                break;
+              case 6:
+                // Orange
+                u8g.drawXBMP(50, 12, orange_28x28_width, orange_28x28_height, orange_28x28_bits);
+                u8g.drawStr(30, 60, "+1 orange");
+                break;
+            }
+            gameCounter += 1;
+            if (gameCounter>shortWait) {
+              gameCounter = 0;
+              if (gamePick > 0) {
                 superHappyCounter = 100;
-                catHunger = 3;
+                cat.entertainment = 3;
               }
               gameMode = 0;
             }
-            break;
-        }
-        break;
-      case 3:
-        // Cuddle
-        u8g.drawXBMP(8, 8, cat_sitting_upscaled4x_001_width, cat_sitting_upscaled4x_001_height, cat_sitting_upscaled4x_001_bits);
-        cuddleCounter += 1;
-        if (cuddleCounter<31) {
-          u8g.drawXBMP(80, 45 - cuddleCounter, cuddle_heart_11x10_width, cuddle_heart_11x10_height, cuddle_heart_11x10_bits);
-          u8g.drawXBMP(92, 40 - cuddleCounter, cuddle_heart_11x10_width, cuddle_heart_11x10_height, cuddle_heart_11x10_bits);
-          u8g.drawXBMP(104, 45 - cuddleCounter, cuddle_heart_11x10_width, cuddle_heart_11x10_height, cuddle_heart_11x10_bits);
-        } else if (cuddleCounter>30 && cuddleCounter < 161) {
-          u8g.drawXBMP(80, 15, cuddle_heart_11x10_width, cuddle_heart_11x10_height, cuddle_heart_11x10_bits);
-          u8g.drawXBMP(92, 10, cuddle_heart_11x10_width, cuddle_heart_11x10_height, cuddle_heart_11x10_bits);
-          u8g.drawXBMP(104, 15, cuddle_heart_11x10_width, cuddle_heart_11x10_height, cuddle_heart_11x10_bits);
-          u8g.setFont(u8g_font_baby);
-          u8g.drawStr(70, 40, "I love you too");
-        } else if (cuddleCounter>160 && cuddleCounter < 240) {
-          u8g.setFont(u8g_font_baby);
-          u8g.drawStr(70, 40, "I love you too");
-        } else if (cuddleCounter==240) {
-          superHappyCounter = 100;
-          score += 50;
-          catMorale = 3;
-          gameMode = 0;
-        }
-        break;
-      case 4:
-        // Educate
-        switch (lessonSequence) {
-          case 0:
-            // Snail arrives
-            u8g.drawXBMP(-24, 13, cat_sitting_upscaled4x_001_width, cat_sitting_upscaled4x_001_height, cat_sitting_upscaled4x_001_bits);
-            u8g.drawXBMP(kokoXPos, 40, koko_le_snail_26x22_width, koko_le_snail_26x22_height, koko_le_snail_26x22_bits);
-            kokoXPos -= 1;
-            if (kokoXPos < 97) {
-              kokoXPos = 97;
-            }
-            snailCounter += 1;
-            if (snailCounter>shortWait) {
-              snailCounter = 0;
-              lessonSequence = 1;
-            }
-            break;
-          case 1:
-            // Snail says hello
-            u8g.setFont(u8g2_font_ncenB08_tr);  // Adjust font as needed
-            u8g.drawXBMP(-24, 13, cat_sitting_upscaled4x_001_width, cat_sitting_upscaled4x_001_height, cat_sitting_upscaled4x_001_bits);
-            u8g.drawXBMP(97, 40, koko_le_snail_26x22_width, koko_le_snail_26x22_height, koko_le_snail_26x22_bits);
-            u8g.drawStr(70, 60, "Hi! >");
-            snailCounter += 1;
-            if (snailCounter>shortWait) {
-              snailCounter = 0;
-              lessonSequence = 2;
-            }
-            break;
-          case 2:
-            // Introduction
-            u8g.drawLine(0, 8, 127, 8);
-            u8g.drawLine(0, 56, 127, 56);
-            u8g.setFont(u8g_font_baby);
-            u8g.drawXBMP(97, 21, koko_le_snail_26x22_width, koko_le_snail_26x22_height, koko_le_snail_26x22_bits);
-            u8g.drawStr(16, 18, "Get ready for a");
-            u8g.drawStr(16, 24, "new lesson with...");
-            u8g.drawStr(16, 30, "");
-            u8g.drawStr(16, 36, "~ Koko Le Snail ~");
-            snailCounter += 1;
-            if (snailCounter>shortWait) {
-              snailCounter = 0;
-              lessonSequence = 3;
-            }
-            break;
-          case 3:
-            // Snail wisdom quote
-            u8g.drawLine(0, 8, 127, 8);
-            u8g.drawLine(0, 56, 127, 56);
-            u8g.setFont(u8g_font_baby);
-            u8g.drawXBMP(97, 21, koko_le_snail_26x22_width, koko_le_snail_26x22_height, koko_le_snail_26x22_bits);
-            switch (randomQuote) {
-              case 1:
-                u8g.drawStr(16, 18, "Sometimes dogs");
-                u8g.drawStr(16, 24, "are grey.");
-                u8g.drawStr(16, 30, "");
-                u8g.drawStr(16, 36, "  -- Koko");
-                break;
-              case 2:
-                u8g.drawStr(16, 18, "Do not sneeze");
-                u8g.drawStr(16, 24, "on the bus.");
-                u8g.drawStr(16, 30, "");
-                u8g.drawStr(16, 36, "  -- Koko");
-                break;
-              case 3:
-                u8g.drawStr(16, 18, "Always wear");
-                u8g.drawStr(16, 24, "pants.");
-                u8g.drawStr(16, 30, "");
-                u8g.drawStr(16, 36, "  -- Koko");
-                break;
-              case 4:
-                u8g.drawStr(16, 18, "Never yawn");
-                u8g.drawStr(16, 24, "during class.");
-                u8g.drawStr(16, 30, "");
-                u8g.drawStr(16, 36, "  -- Koko");
-                break;
-              case 5:
-                u8g.drawStr(16, 18, "Wash your hands");
-                u8g.drawStr(16, 24, "after lunch.");
-                u8g.drawStr(16, 30, "");
-                u8g.drawStr(16, 36, "  -- Koko");
-                break;
-              case 6:
-                u8g.drawStr(16, 18, "Pull my finger...");
-                u8g.drawStr(16, 24, "teehee!");
-                u8g.drawStr(16, 30, "");
-                u8g.drawStr(16, 36, "  -- Koko");
-                break;
-            }
-            snailCounter += 1;
-            if (snailCounter>mediumWait) {
-              snailCounter = 0;
-              lessonSequence = 4;
-            }
-            break;
-          case 4:
-            // Score
-            u8g.setFont(u8g2_font_ncenB08_tr);  // Adjust font as needed
-            u8g.drawXBMP(51, 12, study_26x28_width, study_26x28_height, study_26x28_bits);
-            u8g.drawStr(20, 60, "  +1 Education ");
-            snailCounter += 1;
-            if (snailCounter>shortWait) {
-              snailCounter = 0;
-              superHappyCounter = 100;
-              score += 100;
-              catEducation += 1;
-              gameMode = 0;
-            }
-            break;
-        }
-        break;
-      case 5:
-        // Clean
-        switch (cleanSequence) {
-          case 0:
-            // Clean The Cat game
-            u8g.drawXBMP(38, 8, cat_sitting_upscaled4x_001_width, cat_sitting_upscaled4x_001_height, cat_sitting_upscaled4x_001_bits);
-            checkButton();
-            cleanCounter -= 1;
-            if (cleanCounter<0) {
-              cleanCounter = 0;
-            } else if (cleanCounter>shortWait) {
-              cleanCounter = 0;
-              cleanSequence = 1;
-            }
-            switch(cleanCounter) {
-              case 5 ... 15:
-                u8g.drawXBMP(38, 32, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
-                break;
-              case 16 ... 36:
-                u8g.drawXBMP(38, 32, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
-                u8g.drawXBMP(58, 32, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
-                break;
-              case 37 ... 57:
-                u8g.drawXBMP(23, 16, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
-                u8g.drawXBMP(38, 32, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
-                u8g.drawXBMP(58, 32, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
-                u8g.drawXBMP(73, 16, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
-                break;
-              case 58 ... 78:
-                u8g.drawXBMP(23, 16, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
-                u8g.drawXBMP(38, 32, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
-                u8g.drawXBMP(58, 32, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
-                u8g.drawXBMP(73, 16, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
-                u8g.drawXBMP(32, 0, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
-                u8g.drawXBMP(64, 0, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
-                break;
-              case 79 ... 89:
-                u8g.drawXBMP(23, 16, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
-                u8g.drawXBMP(38, 32, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
-                u8g.drawXBMP(58, 32, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
-                u8g.drawXBMP(73, 16, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
-                u8g.drawXBMP(0, 32, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
-                u8g.drawXBMP(32, 0, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
-                u8g.drawXBMP(64, 0, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
-                u8g.drawXBMP(96, 32, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
-                break;
-              case 90 ... 100:
-                u8g.drawXBMP(0, 0, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
-                u8g.drawXBMP(32, 0, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
-                u8g.drawXBMP(64, 0, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
-                u8g.drawXBMP(96, 0, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
-                u8g.drawXBMP(0, 32, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
-                u8g.drawXBMP(32, 32, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
-                u8g.drawXBMP(64, 32, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
-                u8g.drawXBMP(96, 32, bubbles_30x30_width, bubbles_30x30_height, bubbles_30x30_bits);
-            }
-            break;
-          case 1:
-            u8g.drawXBMP(-24, 13, cat_sitting_upscaled4x_001_width, cat_sitting_upscaled4x_001_height, cat_sitting_upscaled4x_001_bits);
-            u8g.drawXBMP(69, 50, cuddle_heart_11x10_width, cuddle_heart_11x10_height, cuddle_heart_11x10_bits);
-            u8g.drawXBMP(81, 50, cuddle_heart_11x10_width, cuddle_heart_11x10_height, cuddle_heart_11x10_bits);
-            u8g.drawXBMP(93, 50, cuddle_heart_11x10_width, cuddle_heart_11x10_height, cuddle_heart_11x10_bits);
-            u8g.setFont(u8g2_font_ncenB08_tr);  // Adjust font as needed
-            u8g.drawStr(50, 21, "All clean");
-            cleanCounter += 1;
-            if (cleanCounter>shortWait) {
-              cleanCounter = 0;
-              superHappyCounter = 100;
-              score += 200;
-              catHygiene = 3;
-              gameMode = 0;
-            }
-            break;
-        }
-        break;
-      case 6:
-        // Play
-        if (gameSequence == 0) {
-          // Roll the dice
-          checkButton();
-          animationStepMax = 7;
-          u8g.setFont(u8g_font_baby);
-          u8g.drawStr(13, 6, "xxxx Catsino Deluxe xxxx");
-          u8g.drawXBMP(3, 18, casino_frame_40x40_width, casino_frame_40x40_height, casino_frame_40x40_bits);
-          u8g.drawXBMP(44, 18, casino_frame_40x40_width, casino_frame_40x40_height, casino_frame_40x40_bits);
-          u8g.drawXBMP(85, 18, casino_frame_40x40_width, casino_frame_40x40_height, casino_frame_40x40_bits);
-          checkButton();
-          if ( (gameCounter % 3) == 0) {
-            randomGameIconXPos = random(0, 3);
-            randomFoodType = random(0, 7);
           }
-          switch (randomGameIconXPos) {
+          break;
+        case 7:
+          // Random visitor
+          u8g.setFont(u8g_font_baby);
+          switch (randomVisitSequence) {
             case 0:
-              gameIconXPos = 9;
+              // Knock
+              checkButton();
+              u8g.drawXBMP(50, 14, door_28x30_width, door_28x30_height, door_28x30_bits);
+              u8g.drawStr(40, 60, "Knock knock!");
+              randomVisitCounter += 1;
+              if (randomVisitCounter>longWait) {
+                randomVisitSequence = 1;
+                randomVisitCounter = 0;
+              }
               break;
             case 1:
-              gameIconXPos = 50;
+              // Hello
+              u8g.drawXBMP(-24, 13, cat_sitting_upscaled4x_001_width, cat_sitting_upscaled4x_001_height, cat_sitting_upscaled4x_001_bits);
+              u8g.drawXBMP(96, 14, cindy_28x26_width, cindy_28x26_height, cindy_28x26_bits);
+              u8g.drawStr(45, 60, "Hi friend!");
+              randomVisitCounter += 1;
+              if (randomVisitCounter>shortWait) {
+                randomVisitSequence = 2;
+                randomVisitCounter = 0;
+              }
               break;
             case 2:
-              gameIconXPos = 91;
-              break;
-          }
-          checkButton();
-          switch (randomFoodType) {
-            case 0:
-              u8g.drawXBMP(gameIconXPos, 24, ghost_28x28_width, ghost_28x28_height, ghost_28x28_bits);
-              break;
-            case 1:
-              u8g.drawXBMP(gameIconXPos, 24, bar_28x28_width, bar_28x28_height, bar_28x28_bits);
-              break;
-            case 2:
-              u8g.drawXBMP(gameIconXPos, 24, strawberry_28x28_width, strawberry_28x28_height, strawberry_28x28_bits);
+              // Gift
+              u8g.drawXBMP(-24, 13, cat_sitting_upscaled4x_001_width, cat_sitting_upscaled4x_001_height, cat_sitting_upscaled4x_001_bits);
+              u8g.drawXBMP(96, 14, cindy_28x26_width, cindy_28x26_height, cindy_28x26_bits);
+              if (randomVisit<100) {
+                // Matcha
+                u8g.drawStr(45, 60, "I got matcha tea!");
+              } else {
+                u8g.drawStr(45, 60, "I got coco cake!");
+              }
+              randomVisitCounter += 1;
+              if (randomVisitCounter>shortWait) {
+                randomVisitSequence = 3;
+                randomVisitCounter = 0;
+              }
               break;
             case 3:
-              u8g.drawXBMP(gameIconXPos, 24, apple_28x28_width, apple_28x28_height, apple_28x28_bits);
+              // Drink
+              u8g.drawXBMP(-24, 13, cat_sitting_upscaled4x_001_width, cat_sitting_upscaled4x_001_height, cat_sitting_upscaled4x_001_bits);
+              if (randomVisit<100) {
+                // Matcha
+                u8g.drawXBMP(49, 14, matcha_30x32_width, matcha_30x32_height, matcha_30x32_bits);
+              } else {
+                u8g.drawXBMP(49, 14, coco_cake_28x32_width, coco_cake_28x32_height, coco_cake_28x32_bits);
+              }
+              u8g.drawXBMP(96, 14, cindy_28x26_width, cindy_28x26_height, cindy_28x26_bits);
+              u8g.drawStr(45, 60, "Have some <3");
+              randomVisitCounter += 1;
+              if (randomVisitCounter>shortWait) {
+                randomVisitSequence = 4;
+                randomVisitCounter = 0;
+              }
               break;
             case 4:
-              u8g.drawXBMP(gameIconXPos, 24, grape_28x28_width, grape_28x28_height, grape_28x28_bits);
-              break;
-            case 5:
-              u8g.drawXBMP(gameIconXPos, 24, milk_28x28_width, milk_28x28_height, milk_28x28_bits);
-              break;
-            case 6:
-              u8g.drawXBMP(gameIconXPos, 24, orange_28x28_width, orange_28x28_height, orange_28x28_bits);
+              // Bonus
+              u8g.setFont(u8g2_font_ncenB08_tr);  // Adjust font as needed
+              if (randomVisit<100) {
+                // Matcha
+                u8g.drawXBMP(49, 14, matcha_30x32_width, matcha_30x32_height, matcha_30x32_bits);
+              } else {
+                u8g.drawXBMP(49, 14, coco_cake_28x32_width, coco_cake_28x32_height, coco_cake_28x32_bits);
+              }
+              u8g.drawStr(50, 60, "Yum!");
+              randomVisitCounter += 1;
+              if (randomVisitCounter>shortWait) {
+                randomVisitSequence = 0;
+                randomVisitCounter = 0;
+                superHappyCounter = 100;
+                cat.score += 10000;
+                cat.hunger = 3;
+                gameMode = 0;
+              }
               break;
           }
-          gameCounter += 1;
-          if (gameCounter>longWait) {
-            gameCounter = 0;
-            gameMode = 0;
-          }
-        } else if (gameSequence == 1) {
-          // See the result
+          break;
+        case 99:
+          // Show version
           u8g.setFont(u8g2_font_ncenB08_tr);  // Adjust font as needed
-          switch (gamePick) {
-            case 0:
-              // Ghost
-              u8g.drawXBMP(50, 12, ghost_28x28_width, ghost_28x28_height, ghost_28x28_bits);
-              u8g.drawStr(20, 60, "Nothing, boo!");
-              break;
-            case 1:
-              // Bar
-              u8g.drawXBMP(50, 12, bar_28x28_width, bar_28x28_height, bar_28x28_bits);
-              u8g.drawStr(30, 60, "+1 of all!");
-              break;
-            case 2:
-              // Strawberry
-              u8g.drawXBMP(50, 12, strawberry_28x28_width, strawberry_28x28_height, strawberry_28x28_bits);
-              u8g.drawStr(20, 60, "+1 strawberry");
-              break;
-            case 3:
-              // Apple
-              u8g.drawXBMP(50, 12, apple_28x28_width, apple_28x28_height, apple_28x28_bits);
-              u8g.drawStr(30, 60, "+1 apple");
-              break;
-            case 4:
-              // Grape
-              u8g.drawXBMP(50, 12, grape_28x28_width, grape_28x28_height, grape_28x28_bits);
-              u8g.drawStr(30, 60, "+1 grape");
-              break;
-            case 5:
-              // Milk
-              u8g.drawXBMP(50, 12, milk_28x28_width, milk_28x28_height, milk_28x28_bits);
-              u8g.drawStr(30, 60, "+1 milk");
-              break;
-            case 6:
-              // Orange
-              u8g.drawXBMP(50, 12, orange_28x28_width, orange_28x28_height, orange_28x28_bits);
-              u8g.drawStr(30, 60, "+1 orange");
-              break;
-          }
-          gameCounter += 1;
-          if (gameCounter>shortWait) {
-            gameCounter = 0;
-            if (gamePick > 0) {
-              superHappyCounter = 100;
-              catEntertainment = 3;
-            }
+          u8g.drawStr(0, 34, "        TiMiNoo 1.3.3");
+          versionCounter += 1;
+          if (versionCounter>shortWait) {
             gameMode = 0;
           }
-        }
-        break;
-      case 7:
-        // Random visitor
+          break;
+      }
+      if (gameMode < 2) {
+        // Score
         u8g.setFont(u8g_font_baby);
-        switch (randomVisitSequence) {
-          case 0:
-            // Knock
-            checkButton();
-            u8g.drawXBMP(50, 14, door_28x30_width, door_28x30_height, door_28x30_bits);
-            u8g.drawStr(40, 60, "Knock knock!");
-            randomVisitCounter += 1;
-            if (randomVisitCounter>longWait) {
-              randomVisitSequence = 1;
-              randomVisitCounter = 0;
-            }
-            break;
-          case 1:
-            // Hello
-            u8g.drawXBMP(-24, 13, cat_sitting_upscaled4x_001_width, cat_sitting_upscaled4x_001_height, cat_sitting_upscaled4x_001_bits);
-            u8g.drawXBMP(96, 14, cindy_28x26_width, cindy_28x26_height, cindy_28x26_bits);
-            u8g.drawStr(45, 60, "Hi friend!");
-            randomVisitCounter += 1;
-            if (randomVisitCounter>shortWait) {
-              randomVisitSequence = 2;
-              randomVisitCounter = 0;
-            }
-            break;
-          case 2:
-            // Gift
-            u8g.drawXBMP(-24, 13, cat_sitting_upscaled4x_001_width, cat_sitting_upscaled4x_001_height, cat_sitting_upscaled4x_001_bits);
-            u8g.drawXBMP(96, 14, cindy_28x26_width, cindy_28x26_height, cindy_28x26_bits);
-            if (randomVisit<100) {
-              // Matcha
-              u8g.drawStr(45, 60, "I got matcha tea!");
-            } else {
-              u8g.drawStr(45, 60, "I got coco cake!");
-            }
-            randomVisitCounter += 1;
-            if (randomVisitCounter>shortWait) {
-              randomVisitSequence = 3;
-              randomVisitCounter = 0;
-            }
-            break;
-          case 3:
-            // Drink
-            u8g.drawXBMP(-24, 13, cat_sitting_upscaled4x_001_width, cat_sitting_upscaled4x_001_height, cat_sitting_upscaled4x_001_bits);
-            if (randomVisit<100) {
-              // Matcha
-              u8g.drawXBMP(49, 14, matcha_30x32_width, matcha_30x32_height, matcha_30x32_bits);
-            } else {
-              u8g.drawXBMP(49, 14, coco_cake_28x32_width, coco_cake_28x32_height, coco_cake_28x32_bits);
-            }
-            u8g.drawXBMP(96, 14, cindy_28x26_width, cindy_28x26_height, cindy_28x26_bits);
-            u8g.drawStr(45, 60, "Have some <3");
-            randomVisitCounter += 1;
-            if (randomVisitCounter>shortWait) {
-              randomVisitSequence = 4;
-              randomVisitCounter = 0;
-            }
-            break;
-          case 4:
-            // Bonus
-            u8g.setFont(u8g2_font_ncenB08_tr);  // Adjust font as needed
-            if (randomVisit<100) {
-              // Matcha
-              u8g.drawXBMP(49, 14, matcha_30x32_width, matcha_30x32_height, matcha_30x32_bits);
-            } else {
-              u8g.drawXBMP(49, 14, coco_cake_28x32_width, coco_cake_28x32_height, coco_cake_28x32_bits);
-            }
-            u8g.drawStr(50, 60, "Yum!");
-            randomVisitCounter += 1;
-            if (randomVisitCounter>shortWait) {
-              randomVisitSequence = 0;
-              randomVisitCounter = 0;
-              superHappyCounter = 100;
-              score += 10000;
-              catHunger = 3;
-              gameMode = 0;
-            }
-            break;
-        }
-        break;
-      case 99:
-        // Show version
-        u8g.setFont(u8g2_font_ncenB08_tr);  // Adjust font as needed
-        u8g.drawStr(0, 8, "000000000000000000000");
-        u8g.drawStr(0, 21, "000000000000000000000");
-        u8g.drawStr(0, 34, "        TiMiNoo 1.3.2");
-        u8g.drawStr(0, 47, "000000000000000000000");
-        u8g.drawStr(0, 60, "000000000000000000000");
-        versionCounter += 1;
-        if (versionCounter>shortWait) {
-          gameMode = 0;
-        }
-        break;
-    }
-    if (gameMode < 2) {
-      // Score
-      u8g.setFont(u8g_font_baby);
-      ltoa(score, scoreString, 10);
-      u8g.drawStr(81, 60, scoreString);
-    }
-    delay(10);
-  } while (u8g.nextPage());
-}
+        ltoa(cat.score, scoreString, 10);
+        u8g.drawStr(81, 60, scoreString);
+      }
+      if (millis() - lastSaveTime >= saveInterval) {
+        saveStatsToEEPROM();
+        lastSaveTime = millis();
+      }
+      delay(10);
+    } while (u8g.nextPage());
+  }
