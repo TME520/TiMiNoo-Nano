@@ -736,8 +736,8 @@ void setup(void) {
   cat.morale = random(1, 4);
   cat.education = 0;
   cat.entertainment = random(1, 4);
-  // cat.hungerStep = random(4000, 7000);
-  cat.hungerStep = 1;
+  cat.hungerStep = random(4000, 7000);
+  // cat.hungerStep = 1;
   cat.hygieneStep = random(9000, 19000);
   // cat.hygieneStep = 1;
   cat.moraleStep = random(3000, 4000);
@@ -745,7 +745,7 @@ void setup(void) {
   // cat.educationStep = 3;
   cat.entertainmentStep = random(300, 700);
   cat.strawberryFoodStock = 0;
-  cat.appleFoodStock = 4;
+  cat.appleFoodStock = 6;
   cat.iceCreamFoodStock = 0;
   cat.grapeFoodStock = 0;
   cat.milkFoodStock = 0;
