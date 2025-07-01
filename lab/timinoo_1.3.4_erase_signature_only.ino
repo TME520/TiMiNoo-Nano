@@ -600,20 +600,6 @@ void loadStatsFromEEPROM() {
   if (signature == EEPROM_SIGNATURE) {
     EEPROM.get(sizeof(signature), cat);
     Serial.println("Stats loaded from EEPROM");
-    #ifdef DEBUG
-      Serial.print("cat.hunger: ");
-      Serial.println(cat.hunger);
-      Serial.print("cat.hygiene: ");
-      Serial.println(cat.hygiene);
-      Serial.print("cat.morale: ");
-      Serial.println(cat.morale);
-      Serial.print("cat.education: ");
-      Serial.println(cat.education);
-      Serial.print("cat.entertainment: ");
-      Serial.println(cat.entertainment);
-      Serial.print("cat.score: ");
-      Serial.println(cat.score);
-    #endif
   } else {
     Serial.println("Empty or invalid EEPROM");
   }
@@ -729,10 +715,6 @@ void checkButton()
           randomVisitSequence = 1;
           randomVisitCounter = 0;
         }
-      } else if (gameMode == 99) {
-        // Erase EEPROM signature only
-        EEPROM.put(0, 0UL); // assuming signature is stored at address 0
-        Serial.println("EEPROM signature erased.");
       }
     }
   }
@@ -768,10 +750,24 @@ void setup(void) {
   cat.grapeFoodStock = 0;
   cat.milkFoodStock = 0;
   cat.orangeFoodStock = 0;
+  // Output debug info on serial
   #ifdef DEBUG
     Serial.begin(9600);
     Serial.println("---8<---");
+    Serial.print("cat.hunger: ");
+    Serial.println(cat.hunger);
+    Serial.print("cat.hygiene: ");
+    Serial.println(cat.hygiene);
+    Serial.print("cat.morale: ");
+    Serial.println(cat.morale);
+    Serial.print("cat.education: ");
+    Serial.println(cat.education);
+    Serial.print("cat.entertainment: ");
+    Serial.println(cat.entertainment);
+    Serial.print("cat.score: ");
+    Serial.println(cat.score);
   #endif
+  loadStatsFromEEPROM();
 }
 
 void loop(void) {
@@ -1453,11 +1449,9 @@ void loop(void) {
           // Show version
           u8g.setFont(u8g2_font_ncenB08_tr);  // Adjust font as needed
           u8g.drawStr(0, 34, "        TiMiNoo 1.3.4");
-          checkButton();
           versionCounter += 1;
           if (versionCounter>shortWait) {
             gameMode = 0;
-            loadStatsFromEEPROM();
           }
           break;
       }
@@ -1474,3 +1468,28 @@ void loop(void) {
       delay(10);
     } while (u8g.nextPage());
   }
+
+
+// [AUTO-INSERTED] EEPROM erase logic for gameMode == 99 not placed due to missing section
+
+    static unsigned long buttonPressStart = 0;
+    static bool buttonHeld = false;
+
+    if (digitalRead(BUTTON_PIN) == LOW) {
+      if (buttonPressStart == 0) {
+        buttonPressStart = millis();
+      } else if (!buttonHeld && millis() - buttonPressStart > 1000) {
+        buttonHeld = true;
+        // Erase EEPROM signature only
+        EEPROM.put(0, 0UL); // assuming signature is stored at address 0
+        Serial.println("EEPROM signature erased.");
+      }
+    } else {
+      buttonPressStart = 0;
+      buttonHeld = false;
+    }
+      }
+    } else {
+      buttonPressStart = 0;
+      buttonHeld = false;
+    }
