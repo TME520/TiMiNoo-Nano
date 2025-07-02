@@ -637,7 +637,12 @@ void checkButton()
     if (!ButtonWasPressed)
     {
       // Button was just released
-      if (gameMode == 1) {
+      if (gameMode == 0) {
+        // Go to Save menu
+        gameCounter = 0;
+        gameSequence = 0;
+        gameMode = 8;
+      } else if (gameMode == 1) {
         // Do something only if cat needs something
         switch (currentIcon) {
           case 2:
@@ -728,6 +733,12 @@ void checkButton()
         if (randomVisitSequence == 0) {
           randomVisitSequence = 1;
           randomVisitCounter = 0;
+        }
+      } else if (gameMode == 8) {
+        // Save
+        if (gameSequence == 0) {
+          gameSequence = 1;
+          gameCounter = 0;
         }
       } else if (gameMode == 99) {
         // Erase EEPROM signature only
@@ -1449,10 +1460,37 @@ void loop(void) {
               break;
           }
           break;
+        case 8:
+          // Save
+          if (gameSequence == 0) {
+            // animationStepMax = 7;
+            u8g.setFont(u8g_font_baby);
+            u8g.drawStr(13, 6, "xxxx Save game xxxx");
+            u8g.drawStr(13, 18, "Press button for YES");
+            u8g.drawStr(13, 24, "Wait for NO");
+            gameCounter += 1;
+            if (gameCounter>shortWait) {
+              gameCounter = 0;
+              gameMode = 0;
+            }
+            checkButton();
+          } else if (gameSequence == 1) {
+            saveStatsToEEPROM();
+            gameCounter = 0;
+            gameSequence = 2;
+          } else if (gameSequence == 2) {
+            u8g.drawStr(13, 24, "[OK] Game saved");
+            gameCounter += 1;
+            if (gameCounter>shortWait) {
+              gameCounter = 0;
+              gameMode = 0;
+            }
+          }
+          break;
         case 99:
           // Show version
           u8g.setFont(u8g2_font_ncenB08_tr);  // Adjust font as needed
-          u8g.drawStr(0, 34, "        TiMiNoo 1.3.4");
+          u8g.drawStr(0, 34, "        TiMiNoo 1.3.5");
           checkButton();
           versionCounter += 1;
           if (versionCounter>shortWait) {
@@ -1467,10 +1505,12 @@ void loop(void) {
         ltoa(cat.score, scoreString, 10);
         u8g.drawStr(81, 60, scoreString);
       }
+      /*
       if (millis() - lastSaveTime >= saveInterval) {
         saveStatsToEEPROM();
         lastSaveTime = millis();
       }
+      */
       delay(10);
     } while (u8g.nextPage());
   }

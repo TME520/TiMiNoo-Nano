@@ -1,3 +1,9 @@
+# 2025-07-02
+- TiMiNoo version 1.3.5
+- Added save feature
+- Added debug info over serial
+- Switched to UGLib 2
+
 # 2023-07-23
 - Updated README (product presentation)
 
