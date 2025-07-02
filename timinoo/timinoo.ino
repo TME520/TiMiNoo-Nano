@@ -1340,7 +1340,7 @@ void loop(void) {
               case 1:
                 // Bar
                 u8g.drawXBMP(50, 12, bar_28x28_width, bar_28x28_height, bar_28x28_bits);
-                u8g.drawStr(30, 60, "+1 of all!");
+                u8g.drawStr(40, 60, "+1 of all!");
                 break;
               case 2:
                 // Strawberry
@@ -1350,22 +1350,22 @@ void loop(void) {
               case 3:
                 // Apple
                 u8g.drawXBMP(50, 12, apple_28x28_width, apple_28x28_height, apple_28x28_bits);
-                u8g.drawStr(30, 60, "+1 apple");
+                u8g.drawStr(40, 60, "+1 apple");
                 break;
               case 4:
                 // Grape
                 u8g.drawXBMP(50, 12, grape_28x28_width, grape_28x28_height, grape_28x28_bits);
-                u8g.drawStr(30, 60, "+1 grape");
+                u8g.drawStr(40, 60, "+1 grape");
                 break;
               case 5:
                 // Milk
                 u8g.drawXBMP(50, 12, milk_28x28_width, milk_28x28_height, milk_28x28_bits);
-                u8g.drawStr(30, 60, "+1 milk");
+                u8g.drawStr(40, 60, "+1 milk");
                 break;
               case 6:
                 // Orange
                 u8g.drawXBMP(50, 12, orange_28x28_width, orange_28x28_height, orange_28x28_bits);
-                u8g.drawStr(30, 60, "+1 orange");
+                u8g.drawStr(35, 60, "+1 orange");
                 break;
             }
             gameCounter += 1;
