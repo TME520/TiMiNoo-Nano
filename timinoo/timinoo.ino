@@ -70,7 +70,7 @@ unsigned long lastSaveTime = 0;
 const unsigned long saveInterval = 300000; // 5 minutes en millisecondes
 unsigned long lastFrameTime = 0;
 // const unsigned long frameInterval = 50; // 50 ms
-const unsigned long frameInterval = 150; // 150 ms
+const unsigned long frameInterval = 100; // 100 ms
 
 // Cat status variables
 // Status metrics
@@ -786,11 +786,10 @@ void setup(void) {
     Serial.begin(9600);
     Serial.println("---8<---");
   #endif
-}
+};
 
 void loop(void) {
   checkButton();
-  // frameCounter += 1;
   unsigned long currentTime = millis();
   if (currentTime - lastFrameTime >= frameInterval) {
     lastFrameTime = currentTime;
@@ -1512,13 +1511,6 @@ void loop(void) {
           ltoa(cat.score, scoreString, 10);
           u8g.drawStr(81, 60, scoreString);
         }
-        /*
-        if (millis() - lastSaveTime >= saveInterval) {
-          saveStatsToEEPROM();
-          lastSaveTime = millis();
-        }
-        */
-        // delay(10);
       } while (u8g.nextPage());
     }
   }
