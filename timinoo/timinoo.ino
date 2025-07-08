@@ -63,9 +63,9 @@ long randomGameIconXPos = 0;
 long randomFoodType = 0;
 int gameIconXPos = 0;
 int versionCounter = 0;
-int shortWait = 100;
-int mediumWait = 300;
-int longWait = 600;
+int shortWait = 200;
+int mediumWait = 400;
+int longWait = 800;
 unsigned long lastSaveTime = 0;
 const unsigned long saveInterval = 300000; // 5 minutes en millisecondes
 unsigned long lastFrameTime = 0;
@@ -683,6 +683,9 @@ void checkButton()
         }
       } else if (gameMode == 5) {
         // Clean The Cat game
+        if (cleanCounter<0) {
+          cleanCounter = 0;
+        }
         cleanCounter += 15;
       } else if (gameMode == 6) {
         // Catsino Deluxe game
@@ -1211,9 +1214,9 @@ void loop(void) {
                 u8g.drawXBMP(38, 8, cat_sitting_upscaled4x_001_width, cat_sitting_upscaled4x_001_height, cat_sitting_upscaled4x_001_bits);
                 checkButton();
                 cleanCounter -= 1;
-                if (cleanCounter<0) {
-                  cleanCounter = 0;
-                } else if (cleanCounter>shortWait) {
+                if (cleanCounter<(0 - longWait)) {
+                  gameMode = 0;
+                } else if (cleanCounter>100) {
                   cleanCounter = 0;
                   cleanSequence = 1;
                 }
@@ -1289,7 +1292,7 @@ void loop(void) {
               u8g.drawXBMP(3, 18, casino_frame_40x40_width, casino_frame_40x40_height, casino_frame_40x40_bits);
               u8g.drawXBMP(44, 18, casino_frame_40x40_width, casino_frame_40x40_height, casino_frame_40x40_bits);
               u8g.drawXBMP(85, 18, casino_frame_40x40_width, casino_frame_40x40_height, casino_frame_40x40_bits);
-              checkButton();
+              // checkButton();
               if ( (gameCounter % 3) == 0) {
                 randomGameIconXPos = random(0, 3);
                 randomFoodType = random(0, 7);
@@ -1305,7 +1308,7 @@ void loop(void) {
                   gameIconXPos = 91;
                   break;
               }
-              checkButton();
+              // checkButton();
               switch (randomFoodType) {
                 case 0:
                   u8g.drawXBMP(gameIconXPos, 24, ghost_28x28_width, ghost_28x28_height, ghost_28x28_bits);
@@ -1469,7 +1472,6 @@ void loop(void) {
           case 8:
             // Save
             if (gameSequence == 0) {
-              // animationStepMax = 7;
               u8g.setFont(u8g_font_baby);
               u8g.drawStr(13, 6, "xxxx Save game xxxx");
               u8g.drawStr(13, 18, "Press button for YES");
@@ -1496,7 +1498,7 @@ void loop(void) {
           case 99:
             // Show version
             u8g.setFont(u8g2_font_ncenB08_tr);  // Adjust font as needed
-            u8g.drawStr(0, 34, "        TiMiNoo 1.3.6");
+            u8g.drawStr(0, 34, "        TiMiNoo 1.3.7");
             checkButton();
             versionCounter += 1;
             if (versionCounter>shortWait) {
