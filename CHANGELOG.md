@@ -1,3 +1,8 @@
+# 2025-07-08
+- TiMiNoo version 1.3.7
+- Adjusted shortWait, mediumWait and longWait
+- Added timeout on Cat Wash game
+
 # 2025-07-02
 - TiMiNoo version 1.3.5
 - Added save feature
