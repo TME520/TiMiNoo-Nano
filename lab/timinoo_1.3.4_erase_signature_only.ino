@@ -1,6 +1,7 @@
 #include <U8g2lib.h>
 #include <avr/pgmspace.h>
 #include <EEPROM.h>
+#include <stdint.h>
 
 #define DEBUG
 #define EEPROM_SIGNATURE 0x42C4A1
@@ -73,17 +74,17 @@ const unsigned long saveInterval = 300000; // 5 minutes en millisecondes
 // Status metrics
 // 0 = depleted, 1 = low, 2 = average, 3 = full
 struct CatStats {
-  long hunger;
-  long hygiene;
-  long morale;
-  long education;
-  long entertainment;
-  unsigned long hungerStep;
-  unsigned long hygieneStep;
-  unsigned long moraleStep;
-  unsigned long educationStep;
-  unsigned long entertainmentStep;
-  long score;
+  uint8_t hunger;
+  uint8_t hygiene;
+  uint8_t morale;
+  uint8_t education;
+  uint8_t entertainment;
+  uint16_t hungerStep;
+  uint16_t hygieneStep;
+  uint16_t moraleStep;
+  uint16_t educationStep;
+  uint16_t entertainmentStep;
+  uint32_t score;
   int strawberryFoodStock;
   int appleFoodStock;
   int iceCreamFoodStock;
@@ -733,17 +734,17 @@ void setup(void) {
   // Setting up cat stats
   cat.hunger = 0;
   cat.hygiene = 1;
-  cat.morale = random(1, 4);
+  cat.morale = (uint8_t)random(1, 4);
   cat.education = 0;
-  cat.entertainment = random(1, 4);
-  cat.hungerStep = random(4000, 7000);
+  cat.entertainment = (uint8_t)random(1, 4);
+  cat.hungerStep = (uint16_t)random(4000, 7000);
   // cat.hungerStep = 1;
-  cat.hygieneStep = random(9000, 19000);
+  cat.hygieneStep = (uint16_t)random(9000, 19000);
   // cat.hygieneStep = 1;
-  cat.moraleStep = random(3000, 4000);
-  cat.educationStep = random(400, 1500);
+  cat.moraleStep = (uint16_t)random(3000, 4000);
+  cat.educationStep = (uint16_t)random(400, 1500);
   // cat.educationStep = 3;
-  cat.entertainmentStep = random(300, 700);
+  cat.entertainmentStep = (uint16_t)random(300, 700);
   cat.strawberryFoodStock = 0;
   cat.appleFoodStock = 6;
   cat.iceCreamFoodStock = 0;
@@ -789,25 +790,22 @@ void loop(void) {
   // Refresh cat statistics
   // Hunger
   if (frameCounter == lastCatHungerCheck + cat.hungerStep) {
-    cat.hunger -= 1;
-    if (cat.hunger < 0) {
-      cat.hunger = 0;
+    if (cat.hunger > 0) {
+      cat.hunger -= 1;
     }
     lastCatHungerCheck = frameCounter;
   }
   // Hygiene
   if (frameCounter == lastCatHygieneCheck + cat.hygieneStep) {
-    cat.hygiene -= 1;
-    if (cat.hygiene < 0) {
-      cat.hygiene = 0;
+    if (cat.hygiene > 0) {
+      cat.hygiene -= 1;
     }
     lastCatHygieneCheck = frameCounter;
   }
   // Morale
   if (frameCounter == lastCatMoraleCheck + cat.moraleStep) {
-    cat.morale -= 1;
-    if (cat.morale < 0) {
-      cat.morale = 0;
+    if (cat.morale > 0) {
+      cat.morale -= 1;
     }
     lastCatMoraleCheck = frameCounter;
   }
@@ -822,9 +820,8 @@ void loop(void) {
   }
   // Entertainment
   if (frameCounter == lastCatEntertainmentCheck + cat.entertainmentStep) {
-    cat.entertainment -= 1;
-    if (cat.entertainment < 0) {
-      cat.entertainment = 0;
+    if (cat.entertainment > 0) {
+      cat.entertainment -= 1;
     }
     lastCatEntertainmentCheck = frameCounter;
   }
@@ -1458,7 +1455,7 @@ void loop(void) {
       if (gameMode < 2) {
         // Score
         u8g.setFont(u8g_font_baby);
-        ltoa(cat.score, scoreString, 10);
+        ultoa(cat.score, scoreString, 10);
         u8g.drawStr(81, 60, scoreString);
       }
       if (millis() - lastSaveTime >= saveInterval) {
