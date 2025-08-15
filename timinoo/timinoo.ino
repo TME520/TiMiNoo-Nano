@@ -1494,7 +1494,7 @@ void loop(void) {
           case 99:
             // Show version
             u8g.setFont(u8g2_font_ncenB08_tr);  // Adjust font as needed
-            u8g.drawStr(0, 34, "        TiMiNoo 1.3.7");
+            u8g.drawStr(0, 34, "        TiMiNoo 1.3.8");
             checkButton();
             versionCounter += 1;
             if (versionCounter>shortWait) {
