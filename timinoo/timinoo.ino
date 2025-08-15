@@ -593,7 +593,7 @@ void saveStatsToEEPROM() {
   uint32_t signature = EEPROM_SIGNATURE;
   EEPROM.put(0, signature);
   EEPROM.put(sizeof(signature), cat);
-  Serial.println("Stats saved to EEPROM");
+  Serial.println(F("Stats saved to EEPROM"));
 }
 
 void loadStatsFromEEPROM() {
@@ -602,23 +602,23 @@ void loadStatsFromEEPROM() {
 
   if (signature == EEPROM_SIGNATURE) {
     EEPROM.get(sizeof(signature), cat);
-    Serial.println("Stats loaded from EEPROM");
+    Serial.println(F("Stats loaded from EEPROM"));
     #ifdef DEBUG
-      Serial.print("cat.hunger: ");
+      Serial.print(F("cat.hunger: "));
       Serial.println(cat.hunger);
-      Serial.print("cat.hygiene: ");
+      Serial.print(F("cat.hygiene: "));
       Serial.println(cat.hygiene);
-      Serial.print("cat.morale: ");
+      Serial.print(F("cat.morale: "));
       Serial.println(cat.morale);
-      Serial.print("cat.education: ");
+      Serial.print(F("cat.education: "));
       Serial.println(cat.education);
-      Serial.print("cat.entertainment: ");
+      Serial.print(F("cat.entertainment: "));
       Serial.println(cat.entertainment);
-      Serial.print("cat.score: ");
+      Serial.print(F("cat.score: "));
       Serial.println(cat.score);
     #endif
   } else {
-    Serial.println("Empty or invalid EEPROM");
+    Serial.println(F("Empty or invalid EEPROM"));
   }
 }
 
@@ -749,7 +749,7 @@ void checkButton()
       } else if (gameMode == 99) {
         // Erase EEPROM signature only
         EEPROM.put(0, 0UL); // assuming signature is stored at address 0
-        Serial.println("EEPROM signature erased.");
+        Serial.println(F("EEPROM signature erased."));
       }
     }
   }
@@ -787,7 +787,7 @@ void setup(void) {
   cat.orangeFoodStock = 0;
   #ifdef DEBUG
     Serial.begin(9600);
-    Serial.println("---8<---");
+    Serial.println(F("---8<---"));
   #endif
 };
 
@@ -859,7 +859,7 @@ void loop(void) {
         randomVisitCounter = 0;
         gameMode = 7;
         #ifdef DEBUG
-          Serial.print("randomVisit: ");
+          Serial.print(F("randomVisit: "));
           Serial.println(randomVisit);
         #endif
       } else {
