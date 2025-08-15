@@ -31,7 +31,6 @@ Y Pos for lines: 8 / 21 / 34 / 47 / 60
 int gameMode = 99;
 char scoreString[9];
 const char* textToDisplay = "";
-const int buttonPin = 2;
 int buttonState = 0;
 unsigned long frameCounter = 0;
 int animationStep = 1;
@@ -758,7 +757,7 @@ void checkButton()
 void setup(void) {
   // initialize the pushbutton pin as an input:
   u8g.begin();
-  pinMode(buttonPin, INPUT);
+  pinMode(ButtonPin, INPUT);
   // Better random numbers
   randomSeed(analogRead(A0));
   // Wait a bit
