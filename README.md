@@ -9,7 +9,7 @@
 ![After playing](./assets/illustrations/playing2-192x108.jpg)
 ![After cuddling](./assets/illustrations/cuddling-192x108.jpg)
 
-🆕 New in version 1.3.8: Save feature, keep your cat with you even after a reset!
+🆕 **New in version 1.3.8**: Save feature, keep your cat with you even after a reset!
 
 Simply hold the button pressed for 2 seconds while on the home screen, that's it.
 
