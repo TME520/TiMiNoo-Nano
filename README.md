@@ -9,6 +9,10 @@
 ![After playing](./assets/illustrations/playing2-192x108.jpg)
 ![After cuddling](./assets/illustrations/cuddling-192x108.jpg)
 
+🆕 New in version 1.3.8: Save feature, keep your cat with you even after a reset!
+
+Simply hold the button pressed for 2 seconds while on the home screen, that's it.
+
 # Presentation
 
 **A quiet virtual pet - Feed, cuddle, clean and educate your own unique cat**
@@ -25,7 +29,7 @@ Runs on Arduino Nano. Available for Arduboy and Arduino Leonardo/Uno.
 >
 > **Age range**: 7 to 77 years old
 >
-> **Current version**: 1.3.7
+> **Current version**: 1.3.8
 
 TiMiNoo ("Tee Me Noo") is a virtual cat providing minimal distraction, fully office-compatible, single button action, no sound, no death. The cat is different on each run, his characteristics are randomly picked at startup. It has been created with busy people in mind: The gameplay is simple enough for this game to be enjoyed in a work environment.
 
