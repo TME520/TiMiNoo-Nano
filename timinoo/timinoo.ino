@@ -701,6 +701,7 @@ void checkButton()
           slotReel[currentReel] = spinIcon[currentReel];
           currentReel++;
           if (currentReel == 3) {
+            // Determine wins for Catsino Deluxe
             if (slotReel[0] == slotReel[1] && slotReel[1] == slotReel[2]) {
               gamePick = slotReel[0];
               switch (gamePick) {
@@ -1297,7 +1298,7 @@ void loop(void) {
             }
             break;
           case 6:
-            // Play
+            // Play Catsino Deluxe
             if (gameSequence == 0) {
               // Spin the reels
               checkButton();
@@ -1361,6 +1362,7 @@ void loop(void) {
                 }
               }
               gameCounter += 1;
+              // Safety timeout
               if (gameCounter>longWait) {
                 gameCounter = 0;
                 gameMode = 0;
@@ -1400,28 +1402,28 @@ void loop(void) {
               }
               switch (gamePick) {
                 case 0:
-                  u8g.drawStr(20, 60, "Nothing, boo!");
+                  u8g.drawStr(20, 6, "Nothing, boo!");
                   break;
                 case 1:
-                  u8g.drawStr(40, 60, "+1 of all!");
+                  u8g.drawStr(40, 6, "+1 of all!");
                   break;
                 case 2:
-                  u8g.drawStr(20, 60, "+1 strawberry");
+                  u8g.drawStr(20, 6, "+1 strawberry");
                   break;
                 case 3:
-                  u8g.drawStr(40, 60, "+1 apple");
+                  u8g.drawStr(40, 6, "+1 apple");
                   break;
                 case 4:
-                  u8g.drawStr(40, 60, "+1 grape");
+                  u8g.drawStr(40, 6, "+1 grape");
                   break;
                 case 5:
-                  u8g.drawStr(40, 60, "+1 milk");
+                  u8g.drawStr(40, 6, "+1 milk");
                   break;
                 case 6:
-                  u8g.drawStr(35, 60, "+1 orange");
+                  u8g.drawStr(35, 6, "+1 orange");
                   break;
                 default:
-                  u8g.drawStr(40, 60, "No match");
+                  u8g.drawStr(40, 6, "No match");
                   break;
               }
               gameCounter += 1;
@@ -1547,7 +1549,7 @@ void loop(void) {
           case 99:
             // Show version
             u8g.setFont(u8g2_font_ncenB08_tr);  // Adjust font as needed
-            u8g.drawStr(0, 34, "        TiMiNoo 1.3.8");
+            u8g.drawStr(0, 34, "        TiMiNoo 1.3.9");
             checkButton();
             versionCounter += 1;
             if (versionCounter>shortWait) {
