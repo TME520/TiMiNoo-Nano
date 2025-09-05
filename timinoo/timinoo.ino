@@ -702,49 +702,74 @@ void checkButton()
           currentReel++;
           if (currentReel == 3) {
             // Determine wins for Catsino Deluxe
+            // 3 Aligned = +1 of all
             if (slotReel[0] == slotReel[1] && slotReel[1] == slotReel[2]) {
-              gamePick = slotReel[0];
-              switch (gamePick) {
-                case 0:
-                  if (cat.score>666 && frameCounter % 2 == 0) {
-                    cat.score -= 666;
-                  } else {
-                    gamePick = 6;
-                    cat.orangeFoodStock += 1;
-                    cat.score += 200;
-                  }
-                  break;
-                case 1:
-                  cat.strawberryFoodStock += 1;
-                  cat.appleFoodStock += 1;
-                  cat.grapeFoodStock += 1;
-                  cat.milkFoodStock += 1;
-                  cat.orangeFoodStock += 1;
-                  cat.score += 500;
-                  break;
-                case 2:
-                  cat.strawberryFoodStock += 1;
-                  cat.score += 300;
-                  break;
-                case 3:
-                  cat.appleFoodStock += 1;
-                  cat.score += 200;
-                  break;
-                case 4:
-                  cat.grapeFoodStock += 1;
-                  cat.score += 200;
-                  break;
-                case 5:
-                  cat.milkFoodStock += 1;
-                  cat.score += 100;
-                  break;
-                case 6:
-                  cat.orangeFoodStock += 1;
-                  cat.score += 200;
-                  break;
+              if (slotReel[0] == 0) {
+                // 3 x GHOST = Catastrophy
+                cat.strawberryFoodStock=1;
+                cat.appleFoodStock=0;
+                cat.grapeFoodStock=0;
+                cat.milkFoodStock=0;
+                cat.orangeFoodStock=1;
+                cat.score = 666;
+              } else {
+                gamePick = 1;
               }
-            } else {
-              gamePick = -1;
+            } else if (slotReel[0] == slotReel[1] || slotReel[1] == slotReel[2] || slotReel[0] == slotReel[2]) {
+              // 2 Aligned = +1
+              if (slotReel[0] == 0 || slotReel[1] == 0 || slotReel[2] == 0) {
+                gamePick = 2;
+              } else if (slotReel[0] > 1) {
+                gamePick = slotReel[0];
+              } else {
+                gamePick = 0;
+              }
+            }
+            switch (gamePick) {
+              case 0:
+                if (cat.score>666 && frameCounter % 2 == 0) {
+                  cat.score -= 666;
+                } else {
+                  gamePick = 6;
+                  cat.orangeFoodStock += 1;
+                  cat.score += 200;
+                }
+                break;
+              case 1:
+                // +1 of all
+                if (slotReel[0] == 1) {
+                  // 3 x BAR = Megabonus
+                  cat.score += 100000;
+                } else if (slotReel[0] > 1) {
+                  cat.score += 15000;
+                }
+                cat.strawberryFoodStock += 1;
+                cat.appleFoodStock += 1;
+                cat.grapeFoodStock += 1;
+                cat.milkFoodStock += 1;
+                cat.orangeFoodStock += 1;
+                cat.score += 500;
+                break;
+              case 2:
+                cat.strawberryFoodStock += 1;
+                cat.score += 300;
+                break;
+              case 3:
+                cat.appleFoodStock += 1;
+                cat.score += 200;
+                break;
+              case 4:
+                cat.grapeFoodStock += 1;
+                cat.score += 200;
+                break;
+              case 5:
+                cat.milkFoodStock += 1;
+                cat.score += 100;
+                break;
+              case 6:
+                cat.orangeFoodStock += 1;
+                cat.score += 200;
+                break;
             }
             gameSequence = 1;
             gameCounter = 0;
