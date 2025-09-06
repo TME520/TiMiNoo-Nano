@@ -625,174 +625,191 @@ void loadStatsFromEEPROM() {
   }
 }
 
-void checkButton()
-{
-  unsigned long currentTime = millis();
-  boolean buttonIsPressed = digitalRead(ButtonPin) == HIGH;  // Active HIGH
+void checkButton() {
+    unsigned long currentTime = millis();
+    boolean buttonIsPressed = digitalRead(ButtonPin) == HIGH;  // Active HIGH
 
+    // Check for button state change and do debounce
+    if (buttonIsPressed != ButtonWasPressed &&
+        currentTime - ButtonStateChangeTime > DebounceTime) {
+        
+        // Button state has changed
+        ButtonWasPressed = buttonIsPressed;
+        ButtonStateChangeTime = currentTime;
 
-  // Check for button state change and do debounce
-  if (buttonIsPressed != ButtonWasPressed &&
-      currentTime  -  ButtonStateChangeTime > DebounceTime)
-  {
-    // Button state has changed
-    ButtonWasPressed = buttonIsPressed;
-    ButtonStateChangeTime = currentTime;
-
-
-    if (!ButtonWasPressed)
-    {
-      // Button was just released
-      if (gameMode == 0) {
-        // Go to Save menu
-        gameCounter = 0;
-        gameSequence = 0;
-        gameMode = 8;
-      } else if (gameMode == 1) {
-        // Do something only if cat needs something
-        switch (currentIcon) {
-          case 2:
-            // Play
-            gameCounter = 0;
-            gameSequence = 0;
-            currentReel = 0;
-            for (int i = 0; i < 3; i++) {
-              slotReel[i] = 0;
-              spinIcon[i] = 0;
-            }
-            gameMode = 6;
-            break;
-          case 3:
-            // Study
-            randomQuote = random(1, 7);
-            kokoXPos = 128;
-            snailCounter = 0;
-            lessonSequence = 0;
-            gameMode = 4;
-            break;
-          case 4:
-            // Cuddle
-            cuddleCounter = 0;
-            gameMode = 3;
-            break;
-          case 5:
-            // Clean
-            cleanSequence = 0;
-            cleanCounter = 0;
-            gameMode = 5;
-            break;
-          case 6:
-            // Feed
-            selectedFood = 0;
-            feedSequence = 0;
-            feedCounter = 0;
-            gameMode = 2;
-            break;
-        }
-      } else if (gameMode == 5) {
-        // Clean The Cat game
-        if (cleanCounter<0) {
-          cleanCounter = 0;
-        }
-        cleanCounter += 15;
-      } else if (gameMode == 6) {
-        // Catsino Deluxe game
-        if (gameSequence == 0 && currentReel < 3) {
-          slotReel[currentReel] = spinIcon[currentReel];
-          currentReel++;
-          if (currentReel == 3) {
-            // Determine wins for Catsino Deluxe
-            // 3 Aligned = +1 of all
-            if (slotReel[0] == slotReel[1] && slotReel[1] == slotReel[2]) {
-              if (slotReel[0] == 0) {
-                // 3 x GHOST = Catastrophy
-                cat.strawberryFoodStock=1;
-                cat.appleFoodStock=0;
-                cat.grapeFoodStock=0;
-                cat.milkFoodStock=0;
-                cat.orangeFoodStock=1;
-                cat.score = 666;
-              } else {
-                gamePick = 1;
-              }
-            } else if (slotReel[0] == slotReel[1] || slotReel[1] == slotReel[2] || slotReel[0] == slotReel[2]) {
-              // 2 Aligned = +1
-              if (slotReel[0] == 0 || slotReel[1] == 0 || slotReel[2] == 0) {
-                gamePick = 2;
-              } else if (slotReel[0] > 1) {
-                gamePick = slotReel[0];
-              } else {
-                gamePick = 0;
-              }
-            }
-            switch (gamePick) {
-              case 0:
-                if (cat.score>666 && frameCounter % 2 == 0) {
-                  cat.score -= 666;
-                } else {
-                  gamePick = 6;
-                  cat.orangeFoodStock += 1;
-                  cat.score += 200;
+        if (!ButtonWasPressed) {
+            // Button was just released
+            if (gameMode == 0) {
+                // Go to Save menu
+                gameCounter = 0;
+                gameSequence = 0;
+                gameMode = 8;
+            } else if (gameMode == 1) {
+                // Do something only if cat needs something
+                switch (currentIcon) {
+                    case 2: // Play
+                        gameCounter = 0;
+                        gameSequence = 0;
+                        currentReel = 0;
+                        for (int i = 0; i < 3; i++) {
+                            slotReel[i] = 0;
+                            spinIcon[i] = 0;
+                        }
+                        gameMode = 6;
+                        break;
+                    case 3: // Study
+                        randomQuote = random(1, 7);
+                        kokoXPos = 128;
+                        snailCounter = 0;
+                        lessonSequence = 0;
+                        gameMode = 4;
+                        break;
+                    case 4: // Cuddle
+                        cuddleCounter = 0;
+                        gameMode = 3;
+                        break;
+                    case 5: // Clean
+                        cleanSequence = 0;
+                        cleanCounter = 0;
+                        gameMode = 5;
+                        break;
+                    case 6: // Feed
+                        selectedFood = 0;
+                        feedSequence = 0;
+                        feedCounter = 0;
+                        gameMode = 2;
+                        break;
                 }
-                break;
-              case 1:
-                // +1 of all
-                if (slotReel[0] == 1) {
-                  // 3 x BAR = Megabonus
-                  cat.score += 100000;
-                } else if (slotReel[0] > 1) {
-                  cat.score += 15000;
+            } else if (gameMode == 5) {
+                // Clean The Cat game
+                if (cleanCounter < 0) {
+                    cleanCounter = 0;
                 }
-                cat.strawberryFoodStock += 1;
-                cat.appleFoodStock += 1;
-                cat.grapeFoodStock += 1;
-                cat.milkFoodStock += 1;
-                cat.orangeFoodStock += 1;
-                cat.score += 500;
-                break;
-              case 2:
-                cat.strawberryFoodStock += 1;
-                cat.score += 300;
-                break;
-              case 3:
-                cat.appleFoodStock += 1;
-                cat.score += 200;
-                break;
-              case 4:
-                cat.grapeFoodStock += 1;
-                cat.score += 200;
-                break;
-              case 5:
-                cat.milkFoodStock += 1;
-                cat.score += 100;
-                break;
-              case 6:
-                cat.orangeFoodStock += 1;
-                cat.score += 200;
-                break;
+                cleanCounter += 15;
+            } else if (gameMode == 6) {
+                // Catsino Deluxe game
+                if (gameSequence == 0 && currentReel < 3) {
+                    slotReel[currentReel] = spinIcon[currentReel];
+                    currentReel++;
+                    if (currentReel == 3) {
+                        // Determine wins for Catsino Deluxe
+                        Serial.print(F("slotReel[0]:"));
+                        Serial.println(slotReel[0]);
+                        Serial.print(F("slotReel[1]:"));
+                        Serial.println(slotReel[1]);
+                        Serial.print(F("slotReel[2]:"));
+                        Serial.println(slotReel[2]);
+                        String superReel = String(slotReel[0]) + 
+                                           String(slotReel[1]) + 
+                                           String(slotReel[2]);
+                        Serial.print(F("superReel:"));
+                        Serial.println(superReel);
+
+                        // 3 Aligned = +1 of all
+                        if (superReel == "000") {
+                            // 3 x GHOST = Catastrophy
+                            cat.strawberryFoodStock = 0;
+                            cat.appleFoodStock = 0;
+                            cat.grapeFoodStock = 0;
+                            cat.milkFoodStock = 0;
+                            cat.orangeFoodStock = 0;
+                            cat.score = 0;
+                            gamePick = 7;
+                        } else if (superReel == "111") {
+                            // 3 x BAR
+                            cat.strawberryFoodStock += 30;
+                            cat.appleFoodStock += 30;
+                            cat.grapeFoodStock += 30;
+                            cat.milkFoodStock += 30;
+                            cat.orangeFoodStock += 30;
+                            cat.score += 100000;
+                            gamePick = 8;
+                        } else if (superReel == "222") {
+                            // 3 x STRAWBERRY
+                            cat.strawberryFoodStock += 30;
+                            cat.score += 10000;
+                            gamePick = 9;
+                        } else if (superReel == "333") {
+                            cat.appleFoodStock += 30;
+                            cat.score += 10000;
+                            gamePick = 9;
+                        } else if (superReel == "444") {
+                            cat.grapeFoodStock += 30;
+                            cat.score += 10000;
+                            gamePick = 9;
+                        } else if (superReel == "555") {
+                            cat.milkFoodStock += 30;
+                            cat.score += 10000;
+                            gamePick = 9;
+                        } else if (superReel == "666") {
+                            cat.orangeFoodStock += 30;
+                            cat.score += 10000;
+                            gamePick = 9;
+                        } else {
+                            switch (slotReel[0]) {
+                                case 0:
+                                    // Nothing
+                                    gamePick = 0;
+                                    break;
+                                case 1:
+                                    // +1 of all
+                                    cat.strawberryFoodStock += 1;
+                                    cat.appleFoodStock += 1;
+                                    cat.grapeFoodStock += 1;
+                                    cat.milkFoodStock += 1;
+                                    cat.orangeFoodStock += 1;
+                                    cat.score += 500;
+                                    gamePick = 1;
+                                    break;
+                                case 2:
+                                    cat.strawberryFoodStock += 1;
+                                    cat.score += 300;
+                                    gamePick = 2;
+                                    break;
+                                case 3:
+                                    cat.appleFoodStock += 1;
+                                    cat.score += 200;
+                                    gamePick = 3;
+                                    break;
+                                case 4:
+                                    cat.grapeFoodStock += 1;
+                                    cat.score += 200;
+                                    gamePick = 4;
+                                    break;
+                                case 5:
+                                    cat.milkFoodStock += 1;
+                                    cat.score += 100;
+                                    gamePick = 5;
+                                    break;
+                                case 6:
+                                    cat.orangeFoodStock += 1;
+                                    cat.score += 200;
+                                    gamePick = 6;
+                                    break;
+                            }
+                        }
+                        gameSequence = 1;
+                        gameCounter = 0;
+                    }
+                }
+            } else if (gameMode == 7) {
+                if (randomVisitSequence == 0) {
+                    randomVisitSequence = 1;
+                    randomVisitCounter = 0;
+                }
+            } else if (gameMode == 8) {
+                // Save
+                if (gameSequence == 0) {
+                    gameSequence = 1;
+                    gameCounter = 0;
+                }
+            } else if (gameMode == 99) {
+                // Erase EEPROM signature only
+                EEPROM.put(0, 0UL); // assuming signature is stored at address 0
+                Serial.println(F("EEPROM signature erased."));
             }
-            gameSequence = 1;
-            gameCounter = 0;
-          }
         }
-      } else if (gameMode == 7) {
-        if (randomVisitSequence == 0) {
-          randomVisitSequence = 1;
-          randomVisitCounter = 0;
-        }
-      } else if (gameMode == 8) {
-        // Save
-        if (gameSequence == 0) {
-          gameSequence = 1;
-          gameCounter = 0;
-        }
-      } else if (gameMode == 99) {
-        // Erase EEPROM signature only
-        EEPROM.put(0, 0UL); // assuming signature is stored at address 0
-        Serial.println(F("EEPROM signature erased."));
-      }
     }
-  }
 }
 
 void setup(void) {
@@ -1446,6 +1463,15 @@ void loop(void) {
                   break;
                 case 6:
                   u8g.drawStr(35, 6, "+1 orange");
+                  break;
+                case 7:
+                  u8g.drawStr(20, 6, "Disaster...");
+                  break;
+                case 8:
+                  u8g.drawStr(40, 6, "+30 of all!");
+                  break;
+                case 9:
+                  u8g.drawStr(40, 6, "Superbonus!");
                   break;
                 default:
                   u8g.drawStr(40, 6, "No match");
