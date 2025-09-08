@@ -774,7 +774,7 @@ void checkButton() {
                                     break;
                             }
                         }
-                        gameSequence = 1;
+                        gameSequence = 2;
                         gameCounter = 0;
                     }
                 }
@@ -1355,6 +1355,7 @@ void loop(void) {
                 currentReel = 0;
               }
             } else if (gameSequence == 1) {
+            } else if (gameSequence == 2) {
               // See the result
               u8g.setFont(u8g2_font_ncenB08_tr);  // Adjust font as needed
               u8g.drawXBMP(3, 18, casino_frame_40x40_width, casino_frame_40x40_height, casino_frame_40x40_bits);
