@@ -41,7 +41,6 @@ const unsigned long DebounceTime = 10;
 boolean ButtonWasPressed = false;
 unsigned long ButtonStateChangeTime = 0; // Debounce timer
 int currentIcon = 0;
-int cuddleCounter = 0;
 int cleanCounter = 0;
 int cleanSequence = 0;
 int gameCounter = 0;
@@ -81,12 +80,10 @@ const unsigned long frameInterval = 100; // 100 ms
 struct CatStats {
   uint8_t hunger;
   uint8_t hygiene;
-  uint8_t morale;
   uint8_t education;
   uint8_t entertainment;
   uint16_t hungerStep;
   uint16_t hygieneStep;
-  uint16_t moraleStep;
   uint16_t educationStep;
   uint16_t entertainmentStep;
   uint32_t score;
@@ -103,7 +100,6 @@ CatStats cat;
 // Tracking status checks
 unsigned long lastCatHungerCheck = 0;
 unsigned long lastCatHygieneCheck = 0;
-unsigned long lastCatMoraleCheck = 0;
 unsigned long lastCatEducationCheck = 0;
 unsigned long lastCatEntertainmentCheck = 0;
 
@@ -380,16 +376,6 @@ static const unsigned char study_26x28_bits[] PROGMEM = {
    0x03, 0x00, 0x00, 0x03, 0x03, 0x00, 0x00, 0x03, 0xfc, 0xff, 0xff, 0x03,
    0xfc, 0xff, 0xff, 0x03 };
 
-#define cuddle_24x24_width 24
-#define cuddle_24x24_height 24
-static const unsigned char cuddle_24x24_bits[] PROGMEM = {
-   0xf0, 0x00, 0x0f, 0xf0, 0x00, 0x0f, 0xfc, 0xc3, 0x3f, 0xfc, 0xc3, 0x3f,
-   0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-   0x3f, 0x3c, 0xfc, 0x3f, 0x3c, 0xfc, 0x0f, 0x00, 0xf0, 0x0f, 0x00, 0xf0,
-   0x0f, 0x00, 0xf0, 0x0f, 0x00, 0xf0, 0x3c, 0x00, 0x3c, 0x3c, 0x00, 0x3c,
-   0xf0, 0x00, 0x0f, 0xf0, 0x00, 0x0f, 0xc0, 0xc3, 0x03, 0xc0, 0xc3, 0x03,
-   0x00, 0xff, 0x00, 0x00, 0xff, 0x00, 0x00, 0x3c, 0x00, 0x00, 0x3c, 0x00 };
-
 #define bubbles_30x30_width 30
 #define bubbles_30x30_height 30
 static const unsigned char bubbles_30x30_bits[] PROGMEM = {
@@ -611,8 +597,6 @@ void loadStatsFromEEPROM() {
       Serial.println(cat.hunger);
       Serial.print(F("cat.hygiene: "));
       Serial.println(cat.hygiene);
-      Serial.print(F("cat.morale: "));
-      Serial.println(cat.morale);
       Serial.print(F("cat.education: "));
       Serial.println(cat.education);
       Serial.print(F("cat.entertainment: "));
@@ -663,10 +647,6 @@ void checkButton() {
                         snailCounter = 0;
                         lessonSequence = 0;
                         gameMode = 4;
-                        break;
-                    case 4: // Cuddle
-                        cuddleCounter = 0;
-                        gameMode = 3;
                         break;
                     case 5: // Clean
                         cleanSequence = 0;
@@ -745,22 +725,28 @@ void checkButton() {
                             cat.orangeFoodStock += 30;
                             cat.score += 10000;
                             gamePick = 9;
+                        } else if (slotReel[0] == 0 && slotReel[1] == 0 || slotReel[1] == 0 && slotReel[2] == 0) {
+                          gamePick = 0;
+                        } else if (slotReel[0] == 0 || slotReel[1] == 0 || slotReel[2] == 0) {
+                          gamePick = 0;
+                        } else if (slotReel[0] == 1 && slotReel[1] == 1 || slotReel[1] == 1 && slotReel[2] == 1) {
+                          cat.strawberryFoodStock += 1;
+                          cat.appleFoodStock += 1;
+                          cat.grapeFoodStock += 1;
+                          cat.milkFoodStock += 1;
+                          cat.orangeFoodStock += 1;
+                          cat.score += 500;
+                          gamePick = 1;
+                        } else if (slotReel[0] == 1 || slotReel[1] == 1 || slotReel[2] == 1) {
+                          cat.strawberryFoodStock += 1;
+                          cat.appleFoodStock += 1;
+                          cat.grapeFoodStock += 1;
+                          cat.milkFoodStock += 1;
+                          cat.orangeFoodStock += 1;
+                          cat.score += 500;
+                          gamePick = 1;
                         } else {
                             switch (slotReel[0]) {
-                                case 0:
-                                    // Nothing
-                                    gamePick = 0;
-                                    break;
-                                case 1:
-                                    // +1 of all
-                                    cat.strawberryFoodStock += 1;
-                                    cat.appleFoodStock += 1;
-                                    cat.grapeFoodStock += 1;
-                                    cat.milkFoodStock += 1;
-                                    cat.orangeFoodStock += 1;
-                                    cat.score += 500;
-                                    gamePick = 1;
-                                    break;
                                 case 2:
                                     cat.strawberryFoodStock += 1;
                                     cat.score += 300;
@@ -825,14 +811,12 @@ void setup(void) {
   // Setting up cat stats
   cat.hunger = 0;
   cat.hygiene = 1;
-  cat.morale = (uint8_t)random(1, 4);
   cat.education = 0;
   cat.entertainment = (uint8_t)random(1, 4);
   cat.hungerStep = (uint16_t)random(4000, 7000);
   // cat.hungerStep = 1;
   cat.hygieneStep = (uint16_t)random(9000, 19000);
   // cat.hygieneStep = 1;
-  cat.moraleStep = (uint16_t)random(3000, 4000);
   cat.educationStep = (uint16_t)random(400, 1500);
   // cat.educationStep = 3;
   cat.entertainmentStep = (uint16_t)random(300, 700);
@@ -858,7 +842,6 @@ void loop(void) {
       frameCounter = 0;
       lastCatHungerCheck = 0;
       lastCatHygieneCheck = 0;
-      lastCatMoraleCheck = 0;
       lastCatEducationCheck = 0;
       lastCatEntertainmentCheck = 0;
     }
@@ -881,13 +864,6 @@ void loop(void) {
         cat.hygiene -= 1;
       }
       lastCatHygieneCheck = frameCounter;
-    }
-    // Morale
-    if (frameCounter == lastCatMoraleCheck + cat.moraleStep) {
-      if (cat.morale > 0) {
-        cat.morale -= 1;
-      }
-      lastCatMoraleCheck = frameCounter;
     }
     // Education
     if (frameCounter == lastCatEducationCheck + cat.educationStep) {
@@ -925,10 +901,6 @@ void loop(void) {
     } else if (cat.hygiene==0 && gameMode == 0) {
       // Time to clean
       currentIcon = 5;
-      gameMode = 1;
-    } else if (cat.morale==0 && gameMode == 0) {
-      // Time to cuddle
-      currentIcon = 4;
       gameMode = 1;
     } else if (cat.entertainment==0 && gameMode == 0) {
       // Time to play
@@ -985,10 +957,6 @@ void loop(void) {
               case 3:
                 // Study
                 u8g.drawXBMP(88, 12, study_26x28_width, study_26x28_height, study_26x28_bits);
-                break;
-              case 4:
-                // Cuddle
-                u8g.drawXBMP(89, 14, cuddle_24x24_width, cuddle_24x24_height, cuddle_24x24_bits);
                 break;
               case 5:
                 // Bubbles
@@ -1127,30 +1095,6 @@ void loop(void) {
                   gameMode = 0;
                 }
                 break;
-            }
-            break;
-          case 3:
-            // Cuddle
-            u8g.drawXBMP(8, 8, cat_sitting_upscaled4x_001_width, cat_sitting_upscaled4x_001_height, cat_sitting_upscaled4x_001_bits);
-            cuddleCounter += 1;
-            if (cuddleCounter<31) {
-              u8g.drawXBMP(80, 45 - cuddleCounter, cuddle_heart_11x10_width, cuddle_heart_11x10_height, cuddle_heart_11x10_bits);
-              u8g.drawXBMP(92, 40 - cuddleCounter, cuddle_heart_11x10_width, cuddle_heart_11x10_height, cuddle_heart_11x10_bits);
-              u8g.drawXBMP(104, 45 - cuddleCounter, cuddle_heart_11x10_width, cuddle_heart_11x10_height, cuddle_heart_11x10_bits);
-            } else if (cuddleCounter>30 && cuddleCounter < 161) {
-              u8g.drawXBMP(80, 15, cuddle_heart_11x10_width, cuddle_heart_11x10_height, cuddle_heart_11x10_bits);
-              u8g.drawXBMP(92, 10, cuddle_heart_11x10_width, cuddle_heart_11x10_height, cuddle_heart_11x10_bits);
-              u8g.drawXBMP(104, 15, cuddle_heart_11x10_width, cuddle_heart_11x10_height, cuddle_heart_11x10_bits);
-              u8g.setFont(u8g_font_baby);
-              u8g.drawStr(70, 40, "I love you too");
-            } else if (cuddleCounter>160 && cuddleCounter < 240) {
-              u8g.setFont(u8g_font_baby);
-              u8g.drawStr(70, 40, "I love you too");
-            } else if (cuddleCounter==240) {
-              superHappyCounter = 100;
-              cat.score += 50;
-              cat.morale = 3;
-              gameMode = 0;
             }
             break;
           case 4:
@@ -1600,7 +1544,7 @@ void loop(void) {
           case 99:
             // Show version
             u8g.setFont(u8g2_font_ncenB08_tr);  // Adjust font as needed
-            u8g.drawStr(0, 34, "        TiMiNoo 1.3.9");
+            u8g.drawStr(0, 34, "        TiMiNoo 1.4.0");
             checkButton();
             versionCounter += 1;
             if (versionCounter>shortWait) {
