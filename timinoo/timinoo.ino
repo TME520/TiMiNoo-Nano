@@ -68,6 +68,7 @@ int versionCounter = 0;
 int shortWait = 200;
 int mediumWait = 400;
 int longWait = 800;
+int mysteryFood = 0;
 unsigned long lastSaveTime = 0;
 const unsigned long saveInterval = 300000; // 5 minutes en millisecondes
 unsigned long lastFrameTime = 0;
@@ -672,6 +673,8 @@ void checkButton() {
                     slotReel[currentReel] = spinIcon[currentReel];
                     currentReel++;
                     if (currentReel == 3) {
+                        gameSequence = 2;
+                        gameCounter = 0;
                         // Determine wins for Catsino Deluxe
                         Serial.print(F("slotReel[0]:"));
                         Serial.println(slotReel[0]);
@@ -726,10 +729,13 @@ void checkButton() {
                             cat.score += 10000;
                             gamePick = 9;
                         } else if (slotReel[0] == 0 && slotReel[1] == 0 || slotReel[1] == 0 && slotReel[2] == 0) {
+                          // 2 x GHOST
                           gamePick = 0;
                         } else if (slotReel[0] == 0 || slotReel[1] == 0 || slotReel[2] == 0) {
+                          // 1 x GHOST
                           gamePick = 0;
                         } else if (slotReel[0] == 1 && slotReel[1] == 1 || slotReel[1] == 1 && slotReel[2] == 1) {
+                          // 2 x BAR
                           cat.strawberryFoodStock += 1;
                           cat.appleFoodStock += 1;
                           cat.grapeFoodStock += 1;
@@ -738,6 +744,7 @@ void checkButton() {
                           cat.score += 500;
                           gamePick = 1;
                         } else if (slotReel[0] == 1 || slotReel[1] == 1 || slotReel[2] == 1) {
+                          // 1 x BAR
                           cat.strawberryFoodStock += 1;
                           cat.appleFoodStock += 1;
                           cat.grapeFoodStock += 1;
@@ -745,38 +752,18 @@ void checkButton() {
                           cat.orangeFoodStock += 1;
                           cat.score += 500;
                           gamePick = 1;
+                        } else if (slotReel[0] > 1 && slotReel[1] > 1 &&  slotReel[2] > 1) {
+                          gameSequence = 1;
                         } else {
-                            switch (slotReel[0]) {
-                                case 2:
-                                    cat.strawberryFoodStock += 1;
-                                    cat.score += 300;
-                                    gamePick = 2;
-                                    break;
-                                case 3:
-                                    cat.appleFoodStock += 1;
-                                    cat.score += 200;
-                                    gamePick = 3;
-                                    break;
-                                case 4:
-                                    cat.grapeFoodStock += 1;
-                                    cat.score += 200;
-                                    gamePick = 4;
-                                    break;
-                                case 5:
-                                    cat.milkFoodStock += 1;
-                                    cat.score += 100;
-                                    gamePick = 5;
-                                    break;
-                                case 6:
-                                    cat.orangeFoodStock += 1;
-                                    cat.score += 200;
-                                    gamePick = 6;
-                                    break;
-                            }
+                          gamePick = 0;
                         }
-                        gameSequence = 2;
-                        gameCounter = 0;
                     }
+                } else if (gameSequence == 1) {
+                  Serial.print(F("gamePick set to"));
+                  Serial.println(mysteryFood);
+                  gamePick = mysteryFood;
+                  gameSequence = 2;
+                  gameCounter = 0;
                 }
             } else if (gameMode == 7) {
                 if (randomVisitSequence == 0) {
@@ -1356,8 +1343,8 @@ void loop(void) {
               }
             } else if (gameSequence == 1) {
               // Random food item chance selection
-              u8g.setFont(u8g2_font_ncenB08_tr);
-              u8g.drawStr(20, 6, "Lucky Food Time");
+              u8g.setFont(u8g_font_baby);
+              u8g.drawStr(20, 6, "Lucky Food Time!");
               switch(gameCounter) {
                 case 0:
                   u8g.drawXBMP(3, 18, casino_frame_40x40_width, casino_frame_40x40_height, casino_frame_40x40_bits);
@@ -1371,8 +1358,13 @@ void loop(void) {
                   break;
               }
               gameCounter += 1;
+              if (gameCounter > 3) {
+                gameCounter = 0;
+              }
               int reelX[3] = {9, 50, 91};
               for (int i = 0; i < 3; i++) {
+                mysteryFood = slotReel[i];
+                checkButton();
                 switch (slotReel[i]) {
                   case 0:
                     u8g.drawXBMP(reelX[i], 24, ghost_28x28_width, ghost_28x28_height, ghost_28x28_bits);
