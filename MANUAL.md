@@ -2,11 +2,11 @@
 
 # Presentation
 
-**A quiet virtual pet - Feed, cuddle, clean and educate your own unique cat**
+**A quiet virtual pet - Feed, clean and educate your own unique cat**
 
 2 mini games, 7 food types, friends visits and presents, one button action, no sound, no death.
 
-Runs on Arduino Leonardo R3. Available for Arduboy and M5 Stick C Plus.
+Runs on Arduino Leonardo R3/R4 and Nano. Available for Arduboy and M5 Stick C Plus.
 
 > **Game type**: Virtual Pet
 >
@@ -18,7 +18,7 @@ Runs on Arduino Leonardo R3. Available for Arduboy and M5 Stick C Plus.
 
 TiMiNoo ("Tee Me Noo") is a virtual cat providing minimal distraction, fully office-compatible, single button action, no sound, no death. The cat is different on each run, his characteristics are randomly picked at startup. It has been created with busy people in mind: The gameplay is simple enough for this game to be enjoyed in a work environment.
 
-TiMiNoo is a feature-rich virtual cat, a companion for busy days: Cuddle, Feed, Educate, Wash and Entertain your very own furry companion. Tamagotchi lovers could compare it to a Nano.
+TiMiNoo is a feature-rich virtual cat, a companion for busy days: Feed, Educate, Wash and Entertain your very own furry companion. Tamagotchi lovers could compare it to a Nano.
 
 # Features
 ## Single button gameplay
@@ -42,8 +42,6 @@ Feed your TiMiNoo whenever he gets hungry. TiMiNoo doesn't die if you don't feed
 | ![matcha](./assets/icons/matcha.png "Matcha tea") | Matcha tea (bonus item) |
 ## Lessons with Professor Koko
 Your TiMiNoo wants to become a cultured cat. Call Professor Koko Le Snail, a wise teacher that will share his best knowledge with him.
-## Cuddle time
-TiMiNoo craves attention and love, make sure to give him plenty.
 ## Visits from a friend
 Occasionally, when TiMiNoo gets hungry, his friend comes home and offer either a cup of hot Matcha tea or a slice of home made Coco cake.
 
@@ -67,8 +65,6 @@ Earn points every time you take action and increase your score.
 | Grape, orange, apple | +200 points |
 | Milk | +100 points |
 
-### Cuddle
-- Give a big kiss and a hug to your cat: +50 points
 ### Educate
 - Get some good wisdom from Koko Le Snail: +100 points
 ### Wash your TiMiNoo at the Catwash Station
@@ -85,7 +81,6 @@ Every run is a fresh beginning with new statistics:
 
 - **Appetite**: How often your TiMiNoo will ask for food,
 - **Hygiene**: How quickly your TiMiNoo gets dirty,
-- **Morale**: How happy your TiMiNoo feels,
 - **Education**: How well trained your TiMiNoo is,
 - **Entertainment**: How often your TiMiNoo will want to play.
 
@@ -111,10 +106,6 @@ TiMiNoo looks at a book icon.
 TiMiNoo looks at a pizza slice icon.
 
 ![need_food](./assets/manual/500px/need_food-500px.png "Need Food")
-### TiMiNoo wants to cuddle with you
-TiMiNoo looks at a half-empty heart icon.
-
-![need_cuddle](./assets/manual/500px/need_cuddle-500px.png "Need Cuddle")
 ### TiMiNoo needs a bath
 TiMiNoo looks at a bubble icon.
 
@@ -134,7 +125,11 @@ Earn random items and points at the Catsino!
 
 ![need_play](./assets/manual/500px/need_play-500px.png "Need Play")
 
-2. Items are moving across the screen. *Press the button once*.
+2. 3 items are moving across the screen. *Press the button once*.
+
+3. 2 items are moving across the screen. *Press the button once*.
+
+4. 1 item is moving across the screen. *Press the button once*.
 
 ![catsino_01](./assets/manual/500px/catsino_01-500px.png "Catsino Deluxe 1")
 
@@ -175,14 +170,6 @@ Earn random items and points at the Catsino!
 3. TiMiNoo is having a feast!
 
 ![feed_02](./assets/manual/500px/feed_02-500px.png "Feed 2")
-### How to cuddle with TiMiNoo
-1. TiMiNoo calls for attention, he wants you to pet him. *Press the button once*.
-
-![need_cuddle](./assets/manual/500px/need_cuddle-500px.png "Need Cuddle")
-
-2. TiMiNoo shares the love with you.
-
-![cuddle_01](./assets/manual/500px/cuddle_01-500px.png "Cuddle 1")
 ### How to play Catwash Station
 1. TiMiNoo is dirty and needs a good wash, scrub all that dust off his fur! *Press the button once*.
 
@@ -198,7 +185,7 @@ Earn random items and points at the Catsino!
 # Build your own
 ![Prototype board](./assets/proto5.jpg "TiMiNoo")
 ## Items
-- 1x Arduino Leonardo R3
+- 1x Arduino Leonardo R3/R4 or Nano
 - 1x Button
 - 1x 128*64 OLED screen
 - 1x 10k Ohm resistor

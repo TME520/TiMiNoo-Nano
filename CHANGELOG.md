@@ -1,3 +1,8 @@
+# 2025-09-11
+- TiMiNoo version 1.4.0
+- Reworked Catsino Deluxe
+- Now very much alike a real slot machine
+
 # 2025-07-08
 - TiMiNoo version 1.3.7
 - Adjusted shortWait, mediumWait and longWait

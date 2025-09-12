@@ -7,6 +7,10 @@
 ![After washing](./assets/illustrations/washing2-192x108.jpg)
 ![After playing](./assets/illustrations/playing2-192x108.jpg)
 
+🆕 **New in version 1.4.0**: Much improved Catsino Deluxe!
+
+Feels like a real slot machine now, try it!
+
 🆕 **New in version 1.3.8**: Save feature, keep your cat with you even after a reset!
 
 Simply hold the button pressed for 2 seconds while on the home screen, that's it.
