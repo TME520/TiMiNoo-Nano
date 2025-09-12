@@ -764,6 +764,24 @@ void checkButton() {
                   gamePick = mysteryFood;
                   gameSequence = 2;
                   gameCounter = 0;
+                  switch (gamePick) {
+                    case 2:
+                      cat.strawberryFoodStock += 1;
+                      break;
+                    case 3:
+                      cat.appleFoodStock += 1;
+                      break;
+                    case 4:
+                      cat.grapeFoodStock += 1;
+                      break;
+                    case 5:
+                      cat.milkFoodStock += 1;
+                      break;
+                    case 6:
+                      cat.orangeFoodStock += 1;
+                      break;
+                  }
+                  cat.score += 200;
                 }
             } else if (gameMode == 7) {
                 if (randomVisitSequence == 0) {
