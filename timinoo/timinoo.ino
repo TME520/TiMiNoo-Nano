@@ -1362,7 +1362,7 @@ void loop(void) {
             } else if (gameSequence == 1) {
               // Random food item chance selection
               u8g.setFont(u8g_font_baby);
-              u8g.drawStr(30, 6, "Lucky Food Time!");
+              u8g.drawStr(30, 6, "### Lucky Food Time ###");
               switch(gameCounter) {
                 case 0:
                   u8g.drawXBMP(3, 18, casino_frame_40x40_width, casino_frame_40x40_height, casino_frame_40x40_bits);
@@ -1441,37 +1441,37 @@ void loop(void) {
               }
               switch (gamePick) {
                 case 0:
-                  u8g.drawStr(25, 6, "Nothing, boo!");
+                  u8g.drawStr(25, 10, "Nothing, boo!");
                   break;
                 case 1:
-                  u8g.drawStr(40, 6, "+1 of all!");
+                  u8g.drawStr(40, 10, "+1 of all!");
                   break;
                 case 2:
-                  u8g.drawStr(20, 6, "+1 strawberry");
+                  u8g.drawStr(20, 10, "+1 strawberry");
                   break;
                 case 3:
-                  u8g.drawStr(40, 6, "+1 apple");
+                  u8g.drawStr(40, 10, "+1 apple");
                   break;
                 case 4:
-                  u8g.drawStr(40, 6, "+1 grape");
+                  u8g.drawStr(40, 10, "+1 grape");
                   break;
                 case 5:
-                  u8g.drawStr(40, 6, "+1 milk");
+                  u8g.drawStr(40, 10, "+1 milk");
                   break;
                 case 6:
-                  u8g.drawStr(35, 6, "+1 orange");
+                  u8g.drawStr(35, 10, "+1 orange");
                   break;
                 case 7:
-                  u8g.drawStr(20, 6, "Disaster...");
+                  u8g.drawStr(20, 10, "Disaster...");
                   break;
                 case 8:
-                  u8g.drawStr(40, 6, "+30 of all!");
+                  u8g.drawStr(40, 10, "+30 of all!");
                   break;
                 case 9:
-                  u8g.drawStr(40, 6, "Superbonus!");
+                  u8g.drawStr(40, 10, "Superbonus!");
                   break;
                 default:
-                  u8g.drawStr(40, 6, "No match");
+                  u8g.drawStr(40, 10, "No match");
                   break;
               }
               gameCounter += 1;
