@@ -1362,7 +1362,7 @@ void loop(void) {
             } else if (gameSequence == 1) {
               // Random food item chance selection
               u8g.setFont(u8g_font_baby);
-              u8g.drawStr(30, 6, "### Lucky Food Time ###");
+              u8g.drawStr(10, 6, "### Lucky Food Time ###");
               switch(gameCounter) {
                 case 0:
                   u8g.drawXBMP(3, 18, casino_frame_40x40_width, casino_frame_40x40_height, casino_frame_40x40_bits);
