@@ -1410,46 +1410,65 @@ void loop(void) {
             } else if (gameSequence == 2) {
               // See the result
               u8g.setFont(u8g2_font_ncenB08_tr);  // Adjust font as needed
+              u8g.drawXBMP(3, 18, casino_frame_40x40_width, casino_frame_40x40_height, casino_frame_40x40_bits);
+              u8g.drawXBMP(44, 18, casino_frame_40x40_width, casino_frame_40x40_height, casino_frame_40x40_bits);
+              u8g.drawXBMP(85, 18, casino_frame_40x40_width, casino_frame_40x40_height, casino_frame_40x40_bits);
+              int reelX[3] = {9, 50, 91};
+              for (int i = 0; i < 3; i++) {
+                switch (slotReel[i]) {
+                  case 0:
+                    u8g.drawXBMP(reelX[i], 24, ghost_28x28_width, ghost_28x28_height, ghost_28x28_bits);
+                    break;
+                  case 1:
+                    u8g.drawXBMP(reelX[i], 24, bar_28x28_width, bar_28x28_height, bar_28x28_bits);
+                    break;
+                  case 2:
+                    u8g.drawXBMP(reelX[i], 24, strawberry_28x28_width, strawberry_28x28_height, strawberry_28x28_bits);
+                    break;
+                  case 3:
+                    u8g.drawXBMP(reelX[i], 24, apple_28x28_width, apple_28x28_height, apple_28x28_bits);
+                    break;
+                  case 4:
+                    u8g.drawXBMP(reelX[i], 24, grape_28x28_width, grape_28x28_height, grape_28x28_bits);
+                    break;
+                  case 5:
+                    u8g.drawXBMP(reelX[i], 24, milk_28x28_width, milk_28x28_height, milk_28x28_bits);
+                    break;
+                  case 6:
+                    u8g.drawXBMP(reelX[i], 24, orange_28x28_width, orange_28x28_height, orange_28x28_bits);
+                    break;
+                }
+              }
               switch (gamePick) {
                 case 0:
                   u8g.drawStr(25, 10, "Nothing, boo!");
-                  u8g.drawXBMP(50, 24, ghost_28x28_width, ghost_28x28_height, ghost_28x28_bits);
                   break;
                 case 1:
                   u8g.drawStr(40, 10, "+1 of all!");
-                  u8g.drawXBMP(50, 24, bar_28x28_width, bar_28x28_height, bar_28x28_bits);
                   break;
                 case 2:
                   u8g.drawStr(20, 10, "+1 strawberry");
-                  u8g.drawXBMP(50, 24, strawberry_28x28_width, strawberry_28x28_height, strawberry_28x28_bits);
                   break;
                 case 3:
                   u8g.drawStr(40, 10, "+1 apple");
-                  u8g.drawXBMP(50, 24, apple_28x28_width, apple_28x28_height, apple_28x28_bits);
                   break;
                 case 4:
                   u8g.drawStr(40, 10, "+1 grape");
-                  u8g.drawXBMP(50, 24, grape_28x28_width, grape_28x28_height, grape_28x28_bits);
                   break;
                 case 5:
                   u8g.drawStr(40, 10, "+1 milk");
-                  u8g.drawXBMP(50, 24, milk_28x28_width, milk_28x28_height, milk_28x28_bits);
                   break;
                 case 6:
                   u8g.drawStr(35, 10, "+1 orange");
-                  u8g.drawXBMP(50, 24, orange_28x28_width, orange_28x28_height, orange_28x28_bits);
                   break;
                 case 7:
                   u8g.drawStr(20, 10, "Disaster...");
-                  u8g.drawXBMP(50, 24, ghost_28x28_width, ghost_28x28_height, ghost_28x28_bits);
                   break;
                 case 8:
                   u8g.drawStr(40, 10, "+30 of all!");
-                  u8g.drawXBMP(50, 24, bar_28x28_width, bar_28x28_height, bar_28x28_bits);
                   break;
                 case 9:
                   u8g.drawStr(30, 10, "Superbonus!");
-                  u8g.drawXBMP(50, 24, bar_28x28_width, bar_28x28_height, bar_28x28_bits);
                   break;
                 default:
                   u8g.drawStr(40, 10, "No match");
