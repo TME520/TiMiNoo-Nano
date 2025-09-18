@@ -574,12 +574,6 @@ static const unsigned char cat_sitting_upscaled4x_007_bits[] PROGMEM = {
    0x00, 0xf0, 0xff, 0xff, 0xff, 0xff, 0x00, 0xf0, 0xff, 0xff, 0xff, 0xff,
    0x00, 0xf0, 0xff, 0xff, 0xff, 0xff, 0x00, 0xf0, 0xff, 0xff, 0xff, 0xff };
 
-#define cuddle_heart_11x10_width 11
-#define cuddle_heart_11x10_height 10
-static const unsigned char cuddle_heart_11x10_bits[] PROGMEM = {
-   0x8c, 0x01, 0xde, 0x03, 0xff, 0x07, 0xff, 0x07, 0xff, 0x07, 0xfe, 0x03,
-   0xfc, 0x01, 0xf8, 0x00, 0x70, 0x00, 0x20, 0x00 };
-
 void saveStatsToEEPROM() {
   uint32_t signature = EEPROM_SIGNATURE;
   EEPROM.put(0, signature);
@@ -1322,9 +1316,6 @@ void loop(void) {
                 break;
               case 1:
                 u8g.drawXBMP(-24, 13, cat_sitting_upscaled4x_001_width, cat_sitting_upscaled4x_001_height, cat_sitting_upscaled4x_001_bits);
-                u8g.drawXBMP(69, 50, cuddle_heart_11x10_width, cuddle_heart_11x10_height, cuddle_heart_11x10_bits);
-                u8g.drawXBMP(81, 50, cuddle_heart_11x10_width, cuddle_heart_11x10_height, cuddle_heart_11x10_bits);
-                u8g.drawXBMP(93, 50, cuddle_heart_11x10_width, cuddle_heart_11x10_height, cuddle_heart_11x10_bits);
                 u8g.setFont(u8g2_font_ncenB08_tr);  // Adjust font as needed
                 u8g.drawStr(50, 21, "All clean!!!");
                 cleanCounter += 1;
