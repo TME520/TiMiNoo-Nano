@@ -60,6 +60,8 @@ int randomVisitSequence = 0;
 int randomVisitCounter = 0;
 long randomGameIconXPos = 0;
 long randomFoodType = 0;
+int foodStockCycleCounter = 0;
+int foodStockCycleIndex = 0;
 int gameIconXPos = 0;
 int slotReel[3];        // final icons for left, center, right
 int spinIcon[3];        // currently displayed while spinning
@@ -200,6 +202,20 @@ static const unsigned char orange_28x28_bits[] PROGMEM = {
    0xf0, 0x03, 0xf0, 0x00, 0xf0, 0x03, 0xf0, 0x00, 0xc0, 0xff, 0x3f, 0x00,
    0xc0, 0xff, 0x3f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
    0x00, 0x00, 0x00, 0x00 };
+
+#define ice_cream_28x28_width 28
+#define ice_cream_28x28_height 28
+static const unsigned char ice_cream_28x28_bits[] PROGMEM = {
+   0x00, 0xc0, 0x3f, 0x00, 0x00, 0xc0, 0x3f, 0x00, 0x00, 0xf0, 0xff, 0x00,
+   0x00, 0xf0, 0xff, 0x00, 0x00, 0xfc, 0xff, 0x03, 0x00, 0xfc, 0xff, 0x03,
+   0x00, 0xff, 0xff, 0x0f, 0x00, 0xff, 0xff, 0x0f, 0xc0, 0xcf, 0x3f, 0x0f,
+   0xc0, 0xcf, 0x3f, 0x0f, 0xf0, 0xf3, 0x3f, 0x0f, 0xf0, 0xf3, 0x3f, 0x0f,
+   0xfc, 0xfc, 0xcf, 0x0f, 0xfc, 0xfc, 0xcf, 0x0f, 0x30, 0xff, 0xf3, 0x03,
+   0x30, 0xff, 0xf3, 0x03, 0xc0, 0xff, 0xfc, 0x00, 0xc0, 0xff, 0xfc, 0x00,
+   0x30, 0x3f, 0x3f, 0x00, 0x30, 0x3f, 0x3f, 0x00, 0xfc, 0xcc, 0x0f, 0x00,
+   0xfc, 0xcc, 0x0f, 0x00, 0xff, 0xf3, 0x03, 0x00, 0xff, 0xf3, 0x03, 0x00,
+   0xfc, 0xc0, 0x00, 0x00, 0xfc, 0xc0, 0x00, 0x00, 0x30, 0x00, 0x00, 0x00,
+   0x30, 0x00, 0x00, 0x00 };
 
 #define milk_28x28_width 28
 #define milk_28x28_height 28
@@ -803,6 +819,50 @@ void checkButton() {
     }
 }
 
+void drawFoodStockCycle() {
+  int stockValue = 0;
+  const char* label = "";
+
+  switch (foodStockCycleIndex) {
+    case 0:
+      label = "Strawberry";
+      stockValue = cat.strawberryFoodStock;
+      u8g.drawXBMP(50, 14, strawberry_28x28_width, strawberry_28x28_height, strawberry_28x28_bits);
+      break;
+    case 1:
+      label = "Apple";
+      stockValue = cat.appleFoodStock;
+      u8g.drawXBMP(50, 14, apple_28x28_width, apple_28x28_height, apple_28x28_bits);
+      break;
+    case 2:
+      label = "Ice cream";
+      stockValue = cat.iceCreamFoodStock;
+      u8g.drawXBMP(50, 14, ice_cream_28x28_width, ice_cream_28x28_height, ice_cream_28x28_bits);
+      break;
+    case 3:
+      label = "Grape";
+      stockValue = cat.grapeFoodStock;
+      u8g.drawXBMP(50, 14, grape_28x28_width, grape_28x28_height, grape_28x28_bits);
+      break;
+    case 4:
+      label = "Milk";
+      stockValue = cat.milkFoodStock;
+      u8g.drawXBMP(50, 14, milk_28x28_width, milk_28x28_height, milk_28x28_bits);
+      break;
+    default:
+      label = "Orange";
+      stockValue = cat.orangeFoodStock;
+      u8g.drawXBMP(50, 14, orange_28x28_width, orange_28x28_height, orange_28x28_bits);
+      break;
+  }
+
+  u8g.setFont(u8g_font_baby);
+  u8g.drawStr(0, 6, label);
+  u8g.drawStr(0, 18, "Stock:");
+  ultoa((unsigned long)stockValue, scoreString, 10);
+  u8g.drawStr(48, 18, scoreString);
+}
+
 void setup(void) {
   // initialize the pushbutton pin as an input:
   u8g.begin();
@@ -854,7 +914,16 @@ void loop(void) {
     if (animationStep>animationStepMax) {
       animationStep=1;
     }
-  
+
+    foodStockCycleCounter += 1;
+    if (foodStockCycleCounter>longWait) {
+      foodStockCycleCounter = 0;
+      foodStockCycleIndex += 1;
+      if (foodStockCycleIndex > 5) {
+        foodStockCycleIndex = 0;
+      }
+    }
+
     // Refresh cat statistics
     // Hunger
     if (frameCounter == lastCatHungerCheck + cat.hungerStep) {
@@ -946,6 +1015,7 @@ void loop(void) {
                 u8g.drawXBMP(8, 8, cat_sitting_upscaled4x_004_width, cat_sitting_upscaled4x_004_height, cat_sitting_upscaled4x_004_bits);
                 break;
             }
+            drawFoodStockCycle();
             break;
           case 1:
             // Idle - looking left
@@ -990,6 +1060,7 @@ void loop(void) {
                 u8g.drawXBMP(8, 8, cat_sitting_upscaled4x_004_width, cat_sitting_upscaled4x_004_height, cat_sitting_upscaled4x_004_bits);
                 break;
             }
+            drawFoodStockCycle();
             break;
           case 2:
             // Feed
