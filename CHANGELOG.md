@@ -1,3 +1,7 @@
+# 2025-09-18
+- Still working on version 1.4.0
+- Minor changes aiming at freeing some memory
+
 # 2025-09-11
 - TiMiNoo version 1.4.0
 - Reworked Catsino Deluxe
