@@ -3,7 +3,6 @@
 #include <EEPROM.h>
 #include <stdint.h>
 
-#define DEBUG
 #define EEPROM_SIGNATURE 0x42C4A1
 
 // U8GLIB_SH1106_128X64 u8g(13, 11, 10, 9); // SCK = 13, MOSI = 11, CS = 10, A0 = 9
@@ -90,7 +89,6 @@ struct CatStats {
   uint32_t score;
   int strawberryFoodStock;
   int appleFoodStock;
-  int iceCreamFoodStock;
   int grapeFoodStock;
   int milkFoodStock;
   int orangeFoodStock;
@@ -573,12 +571,6 @@ static const unsigned char cat_sitting_upscaled4x_007_bits[] PROGMEM = {
    0x00, 0xf0, 0xff, 0xff, 0xff, 0xff, 0x00, 0xf0, 0xff, 0xff, 0xff, 0xff,
    0x00, 0xf0, 0xff, 0xff, 0xff, 0xff, 0x00, 0xf0, 0xff, 0xff, 0xff, 0xff };
 
-#define cuddle_heart_11x10_width 11
-#define cuddle_heart_11x10_height 10
-static const unsigned char cuddle_heart_11x10_bits[] PROGMEM = {
-   0x8c, 0x01, 0xde, 0x03, 0xff, 0x07, 0xff, 0x07, 0xff, 0x07, 0xfe, 0x03,
-   0xfc, 0x01, 0xf8, 0x00, 0x70, 0x00, 0x20, 0x00 };
-
 void saveStatsToEEPROM() {
   uint32_t signature = EEPROM_SIGNATURE;
   EEPROM.put(0, signature);
@@ -593,18 +585,16 @@ void loadStatsFromEEPROM() {
   if (signature == EEPROM_SIGNATURE) {
     EEPROM.get(sizeof(signature), cat);
     Serial.println(F("Stats loaded from EEPROM"));
-    #ifdef DEBUG
-      Serial.print(F("cat.hunger: "));
-      Serial.println(cat.hunger);
-      Serial.print(F("cat.hygiene: "));
-      Serial.println(cat.hygiene);
-      Serial.print(F("cat.education: "));
-      Serial.println(cat.education);
-      Serial.print(F("cat.entertainment: "));
-      Serial.println(cat.entertainment);
-      Serial.print(F("cat.score: "));
-      Serial.println(cat.score);
-    #endif
+    Serial.print(F("cat.hunger: "));
+    Serial.println(cat.hunger);
+    Serial.print(F("cat.hygiene: "));
+    Serial.println(cat.hygiene);
+    Serial.print(F("cat.education: "));
+    Serial.println(cat.education);
+    Serial.print(F("cat.entertainment: "));
+    Serial.println(cat.entertainment);
+    Serial.print(F("cat.score: "));
+    Serial.println(cat.score);
   } else {
     Serial.println(F("Empty or invalid EEPROM"));
   }
@@ -827,14 +817,11 @@ void setup(void) {
   cat.entertainmentStep = (uint16_t)random(300, 700);
   cat.strawberryFoodStock = 0;
   cat.appleFoodStock = 6;
-  cat.iceCreamFoodStock = 0;
   cat.grapeFoodStock = 0;
   cat.milkFoodStock = 0;
   cat.orangeFoodStock = 0;
-  #ifdef DEBUG
-    Serial.begin(9600);
-    Serial.println(F("---8<---"));
-  #endif
+  Serial.begin(9600);
+  Serial.println(F("---8<---"));
 };
 
 void loop(void) {
@@ -896,10 +883,8 @@ void loop(void) {
         randomVisitSequence = 0;
         randomVisitCounter = 0;
         gameMode = 7;
-        #ifdef DEBUG
-          Serial.print(F("randomVisit: "));
-          Serial.println(randomVisit);
-        #endif
+        Serial.print(F("randomVisit: "));
+        Serial.println(randomVisit);
       } else {
         gameMode = 1;
       }
@@ -1272,9 +1257,6 @@ void loop(void) {
                 break;
               case 1:
                 u8g.drawXBMP(-24, 13, cat_sitting_upscaled4x_001_width, cat_sitting_upscaled4x_001_height, cat_sitting_upscaled4x_001_bits);
-                u8g.drawXBMP(69, 50, cuddle_heart_11x10_width, cuddle_heart_11x10_height, cuddle_heart_11x10_bits);
-                u8g.drawXBMP(81, 50, cuddle_heart_11x10_width, cuddle_heart_11x10_height, cuddle_heart_11x10_bits);
-                u8g.drawXBMP(93, 50, cuddle_heart_11x10_width, cuddle_heart_11x10_height, cuddle_heart_11x10_bits);
                 u8g.setFont(u8g2_font_ncenB08_tr);  // Adjust font as needed
                 u8g.drawStr(50, 21, "All clean!!!");
                 cleanCounter += 1;
