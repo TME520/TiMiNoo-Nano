@@ -600,6 +600,21 @@ void loadStatsFromEEPROM() {
   }
 }
 
+/*
+void foodStock() {
+  u8g.drawXBMP(50, 24, strawberry_28x28_width, strawberry_28x28_height, strawberry_28x28_bits);
+  u8g.drawStr(10, 60, cat.strawberryFoodStock);
+  u8g.drawXBMP(50, 14, grape_28x28_width, grape_28x28_height, grape_28x28_bits);
+  u8g.drawStr(10, 60, cat.grapeFoodStock);
+  u8g.drawXBMP(50, 14, milk_28x28_width, milk_28x28_height, milk_28x28_bits);
+  u8g.drawStr(10, 60, cat.milkFoodStock);
+  u8g.drawXBMP(50, 14, orange_28x28_width, orange_28x28_height, orange_28x28_bits);
+  u8g.drawStr(10, 60, cat.orangeFoodStock);
+  u8g.drawXBMP(50, 14, apple_28x28_width, apple_28x28_height, apple_28x28_bits);
+  u8g.drawStr(10, 60, cat.appleFoodStock);
+}
+*/
+
 void checkButton() {
     unsigned long currentTime = millis();
     boolean buttonIsPressed = digitalRead(ButtonPin) == HIGH;  // Active HIGH
@@ -666,17 +681,21 @@ void checkButton() {
                         gameSequence = 2;
                         gameCounter = 0;
                         // Determine wins for Catsino Deluxe
+                        /*
                         Serial.print(F("slotReel[0]:"));
                         Serial.println(slotReel[0]);
                         Serial.print(F("slotReel[1]:"));
                         Serial.println(slotReel[1]);
                         Serial.print(F("slotReel[2]:"));
                         Serial.println(slotReel[2]);
+                        */
                         String superReel = String(slotReel[0]) + 
                                            String(slotReel[1]) + 
                                            String(slotReel[2]);
+                        /*
                         Serial.print(F("superReel:"));
                         Serial.println(superReel);
+                        */
 
                         // 3 Aligned = +1 of all
                         if (superReel == "000") {
@@ -749,8 +768,10 @@ void checkButton() {
                         }
                     }
                 } else if (gameSequence == 1) {
+                  /*
                   Serial.print(F("gamePick set to"));
                   Serial.println(mysteryFood);
+                  */
                   gamePick = mysteryFood;
                   gameSequence = 2;
                   gameCounter = 0;
@@ -787,7 +808,7 @@ void checkButton() {
             } else if (gameMode == 99) {
                 // Erase EEPROM signature only
                 EEPROM.put(0, 0UL); // assuming signature is stored at address 0
-                Serial.println(F("EEPROM signature erased."));
+                // Serial.println(F("EEPROM signature erased."));
             }
         }
     }
@@ -883,8 +904,10 @@ void loop(void) {
         randomVisitSequence = 0;
         randomVisitCounter = 0;
         gameMode = 7;
+        /*
         Serial.print(F("randomVisit: "));
         Serial.println(randomVisit);
+        */
       } else {
         gameMode = 1;
       }
@@ -915,19 +938,19 @@ void loop(void) {
             }
             switch (animationStep) {
               case 1:
-                checkButton();
+                // checkButton();
                 u8g.drawXBMP(8, 8, cat_sitting_upscaled4x_001_width, cat_sitting_upscaled4x_001_height, cat_sitting_upscaled4x_001_bits);
                 break;
               case 2:
-                checkButton();
+                // checkButton();
                 u8g.drawXBMP(8, 8, cat_sitting_upscaled4x_002_width, cat_sitting_upscaled4x_002_height, cat_sitting_upscaled4x_002_bits);
                 break;
               case 3:
-                checkButton();
+                // checkButton();
                 u8g.drawXBMP(8, 8, cat_sitting_upscaled4x_003_width, cat_sitting_upscaled4x_003_height, cat_sitting_upscaled4x_003_bits);
                 break;
               case 4:
-                checkButton();
+                // checkButton();
                 u8g.drawXBMP(8, 8, cat_sitting_upscaled4x_004_width, cat_sitting_upscaled4x_004_height, cat_sitting_upscaled4x_004_bits);
                 break;
             }
@@ -985,26 +1008,22 @@ void loop(void) {
                 if (cat.strawberryFoodStock > 0) {
                   selectedFood = 1;
                   cat.strawberryFoodStock -= 1;
-                  cat.score += 30;
                 } else if (cat.grapeFoodStock > 0) {
                   selectedFood = 2;
                   cat.grapeFoodStock -= 1;
-                  cat.score += 20;
                 } else if (cat.milkFoodStock > 0) {
                   selectedFood = 3;
                   cat.milkFoodStock -= 1;
-                  cat.score += 10;
                 } else if (cat.orangeFoodStock > 0) {
                   selectedFood = 4;
                   cat.orangeFoodStock -= 1;
-                  cat.score += 20;
                 } else if (cat.appleFoodStock > 0) {
                   selectedFood = 5;
                   cat.appleFoodStock -= 1;
-                  cat.score += 20;
                 } else {
                   selectedFood = 6;
                 }
+                cat.score += 20;
                 feedSequence = 1;
                 break;
               case 1:
@@ -1073,7 +1092,7 @@ void loop(void) {
                     break;
                 }
                 if (selectedFood != 6) {
-                  u8g.drawStr(0, 60, "          < Yum!");
+                  u8g.drawStr(10, 60, "< Yum!");
                 }
                 feedCounter += 1;
                 if (feedCounter>shortWait) {
@@ -1584,6 +1603,7 @@ void loop(void) {
             versionCounter += 1;
             if (versionCounter>shortWait) {
               gameMode = 0;
+              versionCounter = 0;
               loadStatsFromEEPROM();
             }
             break;
