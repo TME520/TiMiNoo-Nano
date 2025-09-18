@@ -1095,7 +1095,7 @@ void loop(void) {
                     break;
                 }
                 if (selectedFood != 6) {
-                  u8g.drawStr(10, 60, "< Yum!");
+                  u8g.drawStr(30, 60, "< Yum!");
                 }
                 feedCounter += 1;
                 if (feedCounter>shortWait) {
