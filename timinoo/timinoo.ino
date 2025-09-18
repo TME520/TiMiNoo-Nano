@@ -602,6 +602,9 @@ void loadStatsFromEEPROM() {
 
 /*
 void foodStock() {
+  u8g.drawLine(0, 8, 127, 8);
+  u8g.drawLine(0, 56, 127, 56);
+  u8g.setFont(u8g_font_baby);
   u8g.drawXBMP(50, 24, strawberry_28x28_width, strawberry_28x28_height, strawberry_28x28_bits);
   u8g.drawStr(10, 60, cat.strawberryFoodStock);
   u8g.drawXBMP(50, 14, grape_28x28_width, grape_28x28_height, grape_28x28_bits);
@@ -842,7 +845,7 @@ void setup(void) {
   cat.milkFoodStock = 0;
   cat.orangeFoodStock = 0;
   Serial.begin(9600);
-  Serial.println(F("---8<---"));
+  // Serial.println(F("---8<---"));
 };
 
 void loop(void) {
