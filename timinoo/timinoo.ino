@@ -692,16 +692,15 @@ void checkButton() {
                         Serial.print(F("slotReel[2]:"));
                         Serial.println(slotReel[2]);
                         */
-                        String superReel = String(slotReel[0]) + 
-                                           String(slotReel[1]) + 
-                                           String(slotReel[2]);
-                        /*
-                        Serial.print(F("superReel:"));
-                        Serial.println(superReel);
-                        */
-
+                        const bool threeGhosts = (slotReel[0] == 0 && slotReel[1] == 0 && slotReel[2] == 0);
+                        const bool threeBars = (slotReel[0] == 1 && slotReel[1] == 1 && slotReel[2] == 1);
+                        const bool threeStrawberries = (slotReel[0] == 2 && slotReel[1] == 2 && slotReel[2] == 2);
+                        const bool threeApples = (slotReel[0] == 3 && slotReel[1] == 3 && slotReel[2] == 3);
+                        const bool threeGrapes = (slotReel[0] == 4 && slotReel[1] == 4 && slotReel[2] == 4);
+                        const bool threeMilks = (slotReel[0] == 5 && slotReel[1] == 5 && slotReel[2] == 5);
+                        const bool threeOranges = (slotReel[0] == 6 && slotReel[1] == 6 && slotReel[2] == 6);
                         // 3 Aligned = +1 of all
-                        if (superReel == "000") {
+                        if (threeGhosts) {
                             // 3 x GHOST = Catastrophy
                             cat.strawberryFoodStock = 0;
                             cat.appleFoodStock = 0;
@@ -710,7 +709,7 @@ void checkButton() {
                             cat.orangeFoodStock = 0;
                             cat.score = 0;
                             gamePick = 7;
-                        } else if (superReel == "111") {
+                        } else if (threeBars) {
                             // 3 x BAR
                             cat.strawberryFoodStock += 30;
                             cat.appleFoodStock += 30;
@@ -719,24 +718,24 @@ void checkButton() {
                             cat.orangeFoodStock += 30;
                             cat.score += 100000;
                             gamePick = 8;
-                        } else if (superReel == "222") {
+                        } else if (threeStrawberries) {
                             // 3 x STRAWBERRY
                             cat.strawberryFoodStock += 30;
                             cat.score += 10000;
                             gamePick = 9;
-                        } else if (superReel == "333") {
+                        } else if (threeApples) {
                             cat.appleFoodStock += 30;
                             cat.score += 10000;
                             gamePick = 9;
-                        } else if (superReel == "444") {
+                        } else if (threeGrapes) {
                             cat.grapeFoodStock += 30;
                             cat.score += 10000;
                             gamePick = 9;
-                        } else if (superReel == "555") {
+                        } else if (threeMilks) {
                             cat.milkFoodStock += 30;
                             cat.score += 10000;
                             gamePick = 9;
-                        } else if (superReel == "666") {
+                        } else if (threeOranges) {
                             cat.orangeFoodStock += 30;
                             cat.score += 10000;
                             gamePick = 9;
