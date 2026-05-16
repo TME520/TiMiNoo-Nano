@@ -902,6 +902,7 @@ void loop(void) {
     if (cat.hunger == 0 && gameMode == 0) {
       // Time to feed the cat
       currentIcon = 6;
+      gameMode = 1;
       randomVisit = random(0, 3136);
       if (randomVisit<randomVisitTrigger && randomVisit % 2 == 0) {
         randomVisitSequence = 0;
@@ -911,8 +912,6 @@ void loop(void) {
         Serial.print(F("randomVisit: "));
         Serial.println(randomVisit);
         */
-      } else {
-        gameMode = 1;
       }
     } else if (cat.hygiene==0 && gameMode == 0) {
       // Time to clean
@@ -1601,7 +1600,7 @@ void loop(void) {
           case 99:
             // Show version
             u8g.setFont(u8g2_font_ncenB08_tr);  // Adjust font as needed
-            u8g.drawStr(0, 34, "        TiMiNoo 1.4.0");
+            u8g.drawStr(0, 34, "        TiMiNoo 1.4.1");
             checkButton();
             versionCounter += 1;
             if (versionCounter>shortWait) {
