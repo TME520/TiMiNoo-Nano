@@ -832,10 +832,11 @@ void drawDialog(int mode, const char* text, const char* helper, int icon) {
     return;
   }
 
-  u8g.drawLine(0, 8, 127, 8);
+  // u8g.drawLine(0, 8, 127, 8);
   u8g.drawLine(0, 56, 127, 56);
 
-  u8g.setFont(u8g_font_baby);
+  // u8g.setFont(u8g_font_baby);
+  u8g.setFont(u8g2_font_ncenB08_tr);
   u8g.drawStr(10, 18, text);
 
   switch (icon) {
@@ -866,7 +867,7 @@ void drawDialog(int mode, const char* text, const char* helper, int icon) {
   }
 
   u8g.setFont(u8g_font_baby);
-  u8g.drawStr(10, 62, helper);
+  u8g.drawStr(10, 63, helper);
 }
 
 void setup(void) {
