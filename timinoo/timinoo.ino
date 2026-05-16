@@ -832,12 +832,12 @@ void drawDialog(int mode, const char* text, const char* helper, int icon) {
     return;
   }
 
-  // u8g.drawLine(0, 8, 127, 8);
-  u8g.drawLine(0, 56, 127, 56);
-
-  // u8g.setFont(u8g_font_baby);
   u8g.setFont(u8g2_font_ncenB08_tr);
-  u8g.drawStr(10, 18, text);
+  int textX = (128 - u8g.getStrWidth(text)) / 2;
+  if (textX < 0) {
+    textX = 0;
+  }
+  u8g.drawStr(textX, 10, text);
 
   switch (icon) {
     case 0:
@@ -866,8 +866,9 @@ void drawDialog(int mode, const char* text, const char* helper, int icon) {
       break;
   }
 
+  u8g.drawLine(0, 56, 127, 56);
   u8g.setFont(u8g_font_baby);
-  u8g.drawStr(10, 63, helper);
+  u8g.drawStr(5, 63, helper);
 }
 
 void setup(void) {
