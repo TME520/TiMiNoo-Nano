@@ -796,6 +796,14 @@ void checkButton() {
                       break;
                   }
                   cat.score += 200;
+                } else if (gameSequence == 2) {
+                  if (gamePick > 0) {
+                    superHappyCounter = 100;
+                    cat.entertainment = 3;
+                  }
+                  gameMode = 0;
+                  gameSequence = 0;
+                  currentReel = 0;
                 }
             } else if (gameMode == 7) {
                 if (randomVisitSequence == 0) {
@@ -815,6 +823,50 @@ void checkButton() {
             }
         }
     }
+}
+
+
+void drawDialog(int mode, const char* text, const char* helper, int icon) {
+  // mode 0 = debrief (other modes to come)
+  if (mode != 0) {
+    return;
+  }
+
+  u8g.drawLine(0, 8, 127, 8);
+  u8g.drawLine(0, 56, 127, 56);
+
+  u8g.setFont(u8g_font_baby);
+  u8g.drawStr(10, 18, text);
+
+  switch (icon) {
+    case 0:
+      u8g.drawXBMP(50, 18, ghost_28x28_width, ghost_28x28_height, ghost_28x28_bits);
+      break;
+    case 1:
+      u8g.drawXBMP(50, 18, bar_28x28_width, bar_28x28_height, bar_28x28_bits);
+      break;
+    case 2:
+      u8g.drawXBMP(50, 18, strawberry_28x28_width, strawberry_28x28_height, strawberry_28x28_bits);
+      break;
+    case 3:
+      u8g.drawXBMP(50, 18, apple_28x28_width, apple_28x28_height, apple_28x28_bits);
+      break;
+    case 4:
+      u8g.drawXBMP(50, 18, grape_28x28_width, grape_28x28_height, grape_28x28_bits);
+      break;
+    case 5:
+      u8g.drawXBMP(50, 18, milk_28x28_width, milk_28x28_height, milk_28x28_bits);
+      break;
+    case 6:
+      u8g.drawXBMP(50, 18, orange_28x28_width, orange_28x28_height, orange_28x28_bits);
+      break;
+    case 7:
+      u8g.drawXBMP(50, 18, super_happy_28x28_width, super_happy_28x28_height, super_happy_28x28_bits);
+      break;
+  }
+
+  u8g.setFont(u8g_font_baby);
+  u8g.drawStr(10, 62, helper);
 }
 
 void setup(void) {
@@ -1412,83 +1464,52 @@ void loop(void) {
                 }
               }
             } else if (gameSequence == 2) {
-              // See the result
-              u8g.setFont(u8g2_font_ncenB08_tr);  // Adjust font as needed
-              u8g.drawXBMP(3, 18, casino_frame_40x40_width, casino_frame_40x40_height, casino_frame_40x40_bits);
-              u8g.drawXBMP(44, 18, casino_frame_40x40_width, casino_frame_40x40_height, casino_frame_40x40_bits);
-              u8g.drawXBMP(85, 18, casino_frame_40x40_width, casino_frame_40x40_height, casino_frame_40x40_bits);
-              int reelX[3] = {9, 50, 91};
-              for (int i = 0; i < 3; i++) {
-                switch (slotReel[i]) {
-                  case 0:
-                    u8g.drawXBMP(reelX[i], 24, ghost_28x28_width, ghost_28x28_height, ghost_28x28_bits);
-                    break;
-                  case 1:
-                    u8g.drawXBMP(reelX[i], 24, bar_28x28_width, bar_28x28_height, bar_28x28_bits);
-                    break;
-                  case 2:
-                    u8g.drawXBMP(reelX[i], 24, strawberry_28x28_width, strawberry_28x28_height, strawberry_28x28_bits);
-                    break;
-                  case 3:
-                    u8g.drawXBMP(reelX[i], 24, apple_28x28_width, apple_28x28_height, apple_28x28_bits);
-                    break;
-                  case 4:
-                    u8g.drawXBMP(reelX[i], 24, grape_28x28_width, grape_28x28_height, grape_28x28_bits);
-                    break;
-                  case 5:
-                    u8g.drawXBMP(reelX[i], 24, milk_28x28_width, milk_28x28_height, milk_28x28_bits);
-                    break;
-                  case 6:
-                    u8g.drawXBMP(reelX[i], 24, orange_28x28_width, orange_28x28_height, orange_28x28_bits);
-                    break;
-                }
-              }
+              // See the result: debrief dialog (wait for button)
+              const char* resultText = "No match";
+              int resultIcon = 0;
               switch (gamePick) {
                 case 0:
-                  u8g.drawStr(25, 10, "Nothing, boo!");
+                  resultText = "Nothing, boo!";
+                  resultIcon = 0;
                   break;
                 case 1:
-                  u8g.drawStr(40, 10, "+1 of all!");
+                  resultText = "+1 of all!";
+                  resultIcon = 1;
                   break;
                 case 2:
-                  u8g.drawStr(20, 10, "+1 strawberry");
+                  resultText = "+1 strawberry";
+                  resultIcon = 2;
                   break;
                 case 3:
-                  u8g.drawStr(40, 10, "+1 apple");
+                  resultText = "+1 apple";
+                  resultIcon = 3;
                   break;
                 case 4:
-                  u8g.drawStr(40, 10, "+1 grape");
+                  resultText = "+1 grape";
+                  resultIcon = 4;
                   break;
                 case 5:
-                  u8g.drawStr(40, 10, "+1 milk");
+                  resultText = "+1 milk";
+                  resultIcon = 5;
                   break;
                 case 6:
-                  u8g.drawStr(35, 10, "+1 orange");
+                  resultText = "+1 orange";
+                  resultIcon = 6;
                   break;
                 case 7:
-                  u8g.drawStr(20, 10, "Disaster...");
+                  resultText = "Disaster...";
+                  resultIcon = 0;
                   break;
                 case 8:
-                  u8g.drawStr(40, 10, "+30 of all!");
+                  resultText = "+30 of all!";
+                  resultIcon = 1;
                   break;
                 case 9:
-                  u8g.drawStr(30, 10, "Superbonus!");
-                  break;
-                default:
-                  u8g.drawStr(40, 10, "No match");
+                  resultText = "Superbonus!";
+                  resultIcon = 7;
                   break;
               }
-              gameCounter += 1;
-              if (gameCounter>shortWait) {
-                gameCounter = 0;
-                if (gamePick > 0) {
-                  superHappyCounter = 100;
-                  cat.entertainment = 3;
-                }
-                gameMode = 0;
-                gameSequence = 0;
-                currentReel = 0;
-              }
+              drawDialog(0, resultText, "Press button to continue", resultIcon);
             }
             break;
           case 7:
