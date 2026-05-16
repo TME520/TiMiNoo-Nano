@@ -868,7 +868,7 @@ void drawDialog(int mode, const char* text, const char* helper, int icon) {
 
   u8g.drawLine(0, 56, 127, 56);
   u8g.setFont(u8g_font_baby);
-  u8g.drawStr(10, 63, helper);
+  u8g.drawStr(5, 63, helper);
 }
 
 void setup(void) {
