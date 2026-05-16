@@ -837,7 +837,11 @@ void drawDialog(int mode, const char* text, const char* helper, int icon) {
 
   // u8g.setFont(u8g_font_baby);
   u8g.setFont(u8g2_font_ncenB08_tr);
-  u8g.drawStr(10, 18, text);
+  int textX = (128 - u8g.getStrWidth(text)) / 2;
+  if (textX < 0) {
+    textX = 0;
+  }
+  u8g.drawStr(textX, 18, text);
 
   switch (icon) {
     case 0:
