@@ -623,8 +623,7 @@ void checkButton() {
     boolean buttonIsPressed = digitalRead(ButtonPin) == HIGH;  // Active HIGH
 
     // Check for button state change and do debounce
-    if (buttonIsPressed != ButtonWasPressed &&
-        currentTime - ButtonStateChangeTime > DebounceTime) {
+    if (buttonIsPressed != ButtonWasPressed && currentTime - ButtonStateChangeTime > DebounceTime) {
         
         // Button state has changed
         ButtonWasPressed = buttonIsPressed;
@@ -827,10 +826,13 @@ void checkButton() {
 
 
 void drawDialog(int mode, const char* text, const char* helper, int icon) {
+  // Serial.println(F("> drawDialog()"));
   // mode 0 = debrief (other modes to come)
   if (mode != 0) {
+    // Serial.println(F(">> drawDialog() - Mode is not 0, leaving"));
     return;
   }
+  // Serial.println(F(">> drawDialog() - Mode 0"));
 
   u8g.setFont(u8g2_font_ncenB08_tr);
   int textX = (128 - u8g.getStrWidth(text)) / 2;
@@ -1084,31 +1086,49 @@ void loop(void) {
                 break;
               case 1:
                 // Eat food
-                switch (selectedFood) {
-                  case 1:
-                    u8g.drawXBMP(50, 14, strawberry_28x28_width, strawberry_28x28_height, strawberry_28x28_bits);
-                    u8g.drawStr(10, 60, "Yummy strawberry");
-                    break;
-                  case 2:
-                    u8g.drawXBMP(50, 14, grape_28x28_width, grape_28x28_height, grape_28x28_bits);
-                    u8g.drawStr(30, 60, "Fresh grapes");
-                    break;
-                  case 3:
-                    u8g.drawXBMP(50, 14, milk_28x28_width, milk_28x28_height, milk_28x28_bits);
-                    u8g.drawStr(35, 60, "Farm milk");
-                    break;
-                  case 4:
-                    u8g.drawXBMP(50, 14, orange_28x28_width, orange_28x28_height, orange_28x28_bits);
-                    u8g.drawStr(30, 60, "Juicy orange");
-                    break;
-                  case 5:
-                    u8g.drawXBMP(50, 14, apple_28x28_width, apple_28x28_height, apple_28x28_bits);
-                    u8g.drawStr(35, 60, "Tasty apple");
-                    break;
-                  case 6:
-                    u8g.drawXBMP(50, 14, ghost_28x28_width, ghost_28x28_height, ghost_28x28_bits);
-                    u8g.drawStr(32, 60, "No food :-(");
-                    break;
+                if (feedCounter > 0) {
+                  // Serial.println(F(">> loop() - Eat food"));
+                  const char* resultText = "No match";
+                  int resultIcon = 0;
+                  switch (selectedFood) {
+                    case 1:
+                      // u8g.drawXBMP(50, 14, strawberry_28x28_width, strawberry_28x28_height, strawberry_28x28_bits);
+                      // u8g.drawStr(10, 60, "Yummy strawberry");
+                      resultText = "Yummy strawberry";
+                      resultIcon = 2;
+                      break;
+                    case 2:
+                      // u8g.drawXBMP(50, 14, grape_28x28_width, grape_28x28_height, grape_28x28_bits);
+                      // u8g.drawStr(30, 60, "Fresh grapes");
+                      resultText = "Fresh grapes";
+                      resultIcon = 4;
+                      break;
+                    case 3:
+                      // u8g.drawXBMP(50, 14, milk_28x28_width, milk_28x28_height, milk_28x28_bits);
+                      // u8g.drawStr(35, 60, "Farm milk");
+                      resultText = "Farm milk";
+                      resultIcon = 5;
+                      break;
+                    case 4:
+                      // u8g.drawXBMP(50, 14, orange_28x28_width, orange_28x28_height, orange_28x28_bits);
+                      // u8g.drawStr(30, 60, "Juicy orange");
+                      resultText = "Juicy orange";
+                      resultIcon = 6;
+                      break;
+                    case 5:
+                      // u8g.drawXBMP(50, 14, apple_28x28_width, apple_28x28_height, apple_28x28_bits);
+                      // u8g.drawStr(35, 60, "Tasty apple");
+                      resultText = "Tasty apple";
+                      resultIcon = 3;
+                      break;
+                    case 6:
+                      // u8g.drawXBMP(50, 14, ghost_28x28_width, ghost_28x28_height, ghost_28x28_bits);
+                      // u8g.drawStr(32, 60, "No food :-(");
+                      resultText = "No food :-(";
+                      resultIcon = 0;
+                      break;
+                  }
+                  drawDialog(0, resultText, "Press button to continue", resultIcon);
                 }
                 feedCounter += 1;
                 if (feedCounter>shortWait) {
