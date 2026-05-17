@@ -74,6 +74,9 @@ unsigned long lastFrameTime = 0;
 // const unsigned long frameInterval = 50; // 50 ms
 const unsigned long frameInterval = 100; // 100 ms
 
+const char* resultText = "No match";
+int resultIcon = 0;
+
 // Cat status variables
 // Status metrics
 // 0 = depleted, 1 = low, 2 = average, 3 = full
@@ -1076,27 +1079,39 @@ void loop(void) {
             break;
           case 2:
             // Feed
-            u8g.setFont(u8g2_font_ncenB08_tr);  // Adjust font as needed
+            // u8g.setFont(u8g2_font_ncenB08_tr);  // Adjust font as needed
             switch (feedSequence) {
               case 0:
                 // Select food
                 if (cat.strawberryFoodStock > 0) {
                   selectedFood = 1;
                   cat.strawberryFoodStock -= 1;
+                  resultText = "Yummy strawberry";
+                  resultIcon = 2;
                 } else if (cat.grapeFoodStock > 0) {
                   selectedFood = 2;
                   cat.grapeFoodStock -= 1;
+                  resultText = "Fresh grapes";
+                  resultIcon = 4;
                 } else if (cat.milkFoodStock > 0) {
                   selectedFood = 3;
                   cat.milkFoodStock -= 1;
+                  resultText = "Farm milk";
+                  resultIcon = 5;
                 } else if (cat.orangeFoodStock > 0) {
                   selectedFood = 4;
                   cat.orangeFoodStock -= 1;
+                  resultText = "Juicy orange";
+                  resultIcon = 6;
                 } else if (cat.appleFoodStock > 0) {
                   selectedFood = 5;
                   cat.appleFoodStock -= 1;
+                  resultText = "Tasty apple";
+                  resultIcon = 3;
                 } else {
                   selectedFood = 6;
+                  resultText = "No food :-(";
+                  resultIcon = 0;
                 }
                 cat.score += 20;
                 feedSequence = 1;
@@ -1104,8 +1119,7 @@ void loop(void) {
               case 1:
                 // Eat food
                 // Serial.println(F(">> loop() - Eat food"));
-                const char* resultText = "No match";
-                int resultIcon = 0;
+                /*
                 switch (selectedFood) {
                   case 1:
                     // u8g.drawXBMP(50, 14, strawberry_28x28_width, strawberry_28x28_height, strawberry_28x28_bits);
@@ -1144,8 +1158,9 @@ void loop(void) {
                     resultIcon = 0;
                     break;
                 }
+                */
                 drawDialog(0, resultText, "Press button to continue", resultIcon);
-                feedCounter += 1;
+                // feedCounter += 1;
                 /*
                 if (feedCounter>shortWait) {
                   feedCounter = 0;
